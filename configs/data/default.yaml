@@ -1,4 +1,4 @@
-data_dir: ./emotion_detection/data/ru-izard-emotions
+data_dir: ./data/ru-izard-emotions
 num_labels: 10
 batch_size: 32
 max_length: 128
