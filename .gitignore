@@ -1,4 +1,5 @@
 emotion_detection/outputs/
+mlflow
 
 __pycache__/
 
