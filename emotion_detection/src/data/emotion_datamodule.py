@@ -31,8 +31,8 @@ class EmotionDataset(Dataset):
 class EmotionDataModule(L.LightningDataModule):
     def __init__(
         self,
-        data_dir: str = "./data/ru-izard-emotions",
-        model_name: str = "cointegrated/rubert-tiny2",
+        data_dir: str,
+        model_name: str,
         batch_size: int = 32,
         max_length: int = 128,
         num_workers: int = 0,
