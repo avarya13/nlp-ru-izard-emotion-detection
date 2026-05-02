@@ -1,11 +1,11 @@
 import argparse
 import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from omegaconf import OmegaConf
 
-LABELS = ['neutral', 'joy', 'sadness', 'anger', 'enthusiasm',
-          'surprise', 'disgust', 'fear', 'guilt', 'shame']
-LABELS_RU = ['нейтрально', 'радость', 'грусть', 'гнев', 'интерес',
-             'удивление', 'отвращение', 'страх', 'вина', 'стыд']
+cfg_labels = OmegaConf.load("../../configs/data/labels.yaml")
+LABELS = cfg_labels.labels
+LABELS_RU = cfg_labels.labels_ru
 
 def load_model(model_dir):
     tokenizer = AutoTokenizer.from_pretrained(model_dir)
@@ -23,7 +23,7 @@ def predict_emotion(text, tokenizer, model, labels=LABELS):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model_path", default="./models/emotion_model")
+    parser.add_argument("--model_path", default=f"{cfg.paths.save_dir}/{cfg.model.model_name.replace('/', '_')}")
     parser.add_argument("--text", type=str, required=True)
     args = parser.parse_args()
 
