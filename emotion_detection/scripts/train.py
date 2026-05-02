@@ -6,6 +6,7 @@ from omegaconf import DictConfig
 from src.data.emotion_datamodule import EmotionDataModule
 from src.models.multilabel_classifier import MultiLabelClassifier
 import mlflow.pytorch
+import mlflow.pyfunc
 
 
 mlflow.pytorch.autolog(log_every_n_epoch=1, log_models=False)
@@ -34,7 +35,8 @@ def main(cfg: DictConfig):
     )
 
     # Model
-    model = MultiLabelClassifier(**cfg.model)
+    model_params = {k: v for k, v in cfg.model.items() if k != 'epochs'}
+    model = MultiLabelClassifier(**model_params)
 
     trainer = L.Trainer(
         max_epochs=cfg.model.epochs,
@@ -56,15 +58,15 @@ def main(cfg: DictConfig):
     tokenizer.save_pretrained(save_path)
     print(f"Model saved to {save_path}")
 
-    with mlflow.start_run(run_id=logger.run_id):
-        mlflow.transformers.log_model(
-            transformers_model={
-                "model": model.model,
-                "tokenizer": tokenizer,
-            },  # tokenizer нужно сохранить в dm
-            artifact_path="model",
-            registered_model_name=f"{cfg.model.model_name.replace('/', '_')}",
-        )
+    # with mlflow.start_run(run_id=logger.run_id):
+    #     mlflow.pyfunc.log_model(
+    #         artifact_path="model",
+    #         python_model=model.model,  
+    #         artifacts={
+    #             "model": save_path,  
+    #             "tokenizer": save_path,
+    #         }
+    #     )
 
 
 if __name__ == "__main__":

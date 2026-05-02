@@ -23,6 +23,7 @@ class MultiLabelClassifier(L.LightningModule):
         loss_type: str = "bce",
         focal_gamma: float = 2.0,
         pos_weight: Optional[torch.Tensor] = None,
+        warmup_ratio: float = 0.0,
     ):
         super().__init__()
         self.save_hyperparameters()
@@ -66,21 +67,21 @@ class MultiLabelClassifier(L.LightningModule):
         return loss
 
 
-def validation_step(self, batch, batch_idx):
-    outputs = self.model(
-        input_ids=batch["input_ids"],
-        attention_mask=batch["attention_mask"],
-        labels=batch["labels"],
-    )
-    logits = outputs.logits
-    loss = self.loss_fn(logits, batch["labels"])
-    probs = torch.sigmoid(logits)
-    self.val_auroc(probs, batch["labels"].int())
-    self.val_f1(probs, batch["labels"].int())
-    self.log("val_loss", loss, prog_bar=True)
-    self.log("val_auroc", self.val_auroc, prog_bar=True)
-    self.log("val_f1_macro", self.val_f1, prog_bar=True)
-    return loss
+    def validation_step(self, batch, batch_idx):
+        outputs = self.model(
+            input_ids=batch["input_ids"],
+            attention_mask=batch["attention_mask"],
+            labels=batch["labels"],
+        )
+        logits = outputs.logits
+        loss = self.loss_fn(logits, batch["labels"])
+        probs = torch.sigmoid(logits)
+        self.val_auroc(probs, batch["labels"].int())
+        self.val_f1(probs, batch["labels"].int())
+        self.log("val_loss", loss, prog_bar=True)
+        self.log("val_auroc", self.val_auroc, prog_bar=True)
+        self.log("val_f1_macro", self.val_f1, prog_bar=True)
+        return loss
 
     def test_step(self, batch, batch_idx):
         outputs = self.model(
@@ -101,20 +102,19 @@ def validation_step(self, batch, batch_idx):
             lr=self.hparams.learning_rate,
             weight_decay=self.hparams.weight_decay,
         )
-        if (
-            self.hparams.scheduler_steps is not None
-            and self.hparams.scheduler_steps > 0
-        ):
+        
+        if self.hparams.scheduler_steps > 0:
             total_steps = self.hparams.scheduler_steps
         else:
-            # compute automatically
             total_steps = self.trainer.estimated_stepping_batches
-
-        warmup_steps = self.hparams.warmup_steps
-        if warmup_steps is None or warmup_steps == 0:
+        
+        if self.hparams.warmup_ratio > 0:
             warmup_steps = int(self.hparams.warmup_ratio * total_steps)
-
-        scheduler = get_linear_schedule_with_warmup(
-            optimizer, num_warmup_steps=warmup_steps, num_training_steps=total_steps
-        )
-        return [optimizer], [{"scheduler": scheduler, "interval": "step"}]
+            scheduler = get_linear_schedule_with_warmup(
+                optimizer,
+                num_warmup_steps=warmup_steps,
+                num_training_steps=total_steps,
+            )
+            return [optimizer], [{"scheduler": scheduler, "interval": "step"}]
+        else:
+            return optimizer
