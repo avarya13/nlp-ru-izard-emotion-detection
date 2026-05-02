@@ -1,0 +1,19 @@
+[project]
+name = "ru-izard-emotion-detection"
+version = "0.1.0"
+description = "Multi-label emotion detection"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [    
+    "datasets>=4.8.3",
+    "fire>=0.7.1",
+    "ipykernel>=7.2.0",
+    "marimo>=0.20.4",
+    "matplotlib>=3.10.8",
+    "nltk>=3.9.3",
+    "pandas>=3.0.1",
+    "scikit-learn>=1.8.0",
+    "seaborn>=0.13.2",
+    "torch>=2.11.0",
+    "transformers>=5.6.2",
+]
