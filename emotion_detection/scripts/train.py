@@ -4,21 +4,8 @@ from omegaconf import DictConfig
 from src.data.emotion_datamodule import EmotionDataModule
 from src.models.multilabel_classifier import MultiLabelClassifier
 
-@hydra.main(version_base="1.3", config_path="../configs", config_name="config")
+@hydra.main(version_base="1.3", config_path="../../configs", config_name="config")
 def main(cfg: DictConfig):
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument("--data_dir", default="./data/ru-izard-emotions")
-    # parser.add_argument("--model_name", default="cointegrated/rubert-tiny2")
-    # parser.add_argument("--batch_size", type=int, default=32)
-    # parser.add_argument("--max_length", type=int, default=128)
-    # parser.add_argument("--learning_rate", type=float, default=5e-5)
-    # parser.add_argument("--epochs", type=int, default=10)
-    # parser.add_argument("--num_workers", type=int, default=0)
-    # parser.add_argument("--accelerator", default="auto")
-    # parser.add_argument("--save_path", default="./models/emotion_model")
-    # args = parser.parse_args()
-
-
     L.seed_everything(cfg.seed)
 
     # DataModule
@@ -33,12 +20,6 @@ def main(cfg: DictConfig):
     # Model
     model = MultiLabelClassifier(**cfg.model)
 
-    # Trainer
-    # trainer = L.Trainer(
-    #     max_epochs=args.epochs,
-    #     accelerator=args.accelerator,
-    #     log_every_n_steps=10,
-    # )
     trainer = L.Trainer(
         max_epochs=cfg.train.epochs,
         accelerator=cfg.accelerator,
