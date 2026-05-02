@@ -1,0 +1,7 @@
+_target_: lightning.pytorch.loggers.MLFlowLogger
+experiment_name: emotion_classification
+tracking_uri: file:${paths.mlflow_dir}
+tags:
+  project: ru_izard_emotion_detection
+  user: ${oc.env:USER, unknown}
+log_model: True

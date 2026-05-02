@@ -3,6 +3,7 @@ defaults:
   - model: rubert_tiny2
   - train: default
   - paths: default
+  - logger: mlflow
   - _self_
 
 seed: 42
