@@ -37,7 +37,7 @@ def main(cfg: DictConfig):
     model = MultiLabelClassifier(**cfg.model)
 
     trainer = L.Trainer(
-        max_epochs=cfg.train.epochs,
+        max_epochs=cfg.model.epochs,
         accelerator=cfg.accelerator,
         precision=cfg.precision,
         gradient_clip_val=cfg.train.gradient_clip_val,

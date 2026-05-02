@@ -101,11 +101,20 @@ def validation_step(self, batch, batch_idx):
             lr=self.hparams.learning_rate,
             weight_decay=self.hparams.weight_decay,
         )
-        if self.hparams.scheduler_steps > 0:
-            scheduler = get_linear_schedule_with_warmup(
-                optimizer,
-                num_warmup_steps=self.hparams.warmup_steps,
-                num_training_steps=self.hparams.scheduler_steps,
-            )
-            return [optimizer], [{"scheduler": scheduler, "interval": "step"}]
-        return optimizer
+        if (
+            self.hparams.scheduler_steps is not None
+            and self.hparams.scheduler_steps > 0
+        ):
+            total_steps = self.hparams.scheduler_steps
+        else:
+            # compute automatically
+            total_steps = self.trainer.estimated_stepping_batches
+
+        warmup_steps = self.hparams.warmup_steps
+        if warmup_steps is None or warmup_steps == 0:
+            warmup_steps = int(self.hparams.warmup_ratio * total_steps)
+
+        scheduler = get_linear_schedule_with_warmup(
+            optimizer, num_warmup_steps=warmup_steps, num_training_steps=total_steps
+        )
+        return [optimizer], [{"scheduler": scheduler, "interval": "step"}]
