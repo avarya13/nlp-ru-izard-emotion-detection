@@ -4,6 +4,7 @@ from omegaconf import DictConfig
 from src.data.emotion_datamodule import EmotionDataModule
 from src.models.multilabel_classifier import MultiLabelClassifier
 
+
 @hydra.main(version_base="1.3", config_path="../../configs", config_name="config")
 def main(cfg: DictConfig):
     L.seed_everything(cfg.seed)
@@ -34,11 +35,13 @@ def main(cfg: DictConfig):
     # Saving model and tokenizer in transformers format
     save_path = f"{cfg.paths.save_dir}/{cfg.model.model_name.replace('/', '_')}"
     model.model.save_pretrained(save_path)
-    
+
     from transformers import AutoTokenizer
+
     tokenizer = AutoTokenizer.from_pretrained(cfg.model.model_name)
     tokenizer.save_pretrained(save_path)
     print(f"Model saved to {save_path}")
+
 
 if __name__ == "__main__":
     main()
