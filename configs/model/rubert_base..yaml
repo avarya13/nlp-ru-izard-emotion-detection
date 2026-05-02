@@ -1,8 +1,8 @@
-model_name: cointegrated/rubert-tiny2
-epochs: 10
+model_name: ai-forever/ruBert-base
+epochs: 8
 num_labels: 10
-learning_rate: 5e-5
-weight_decay: 0.00
+learning_rate: 2e-5
+weight_decay: 0.0
 loss_type: bce
 focal_gamma: 2.0
 pos_weight: null
