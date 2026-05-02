@@ -1,32 +1,30 @@
-import argparse
+import hydra
 import lightning as L
 import torch
 from src.data.emotion_datamodule import EmotionDataModule
-from src.models.bert_multilabel import BertMultiLabelClassifier
+from src.models.multilabel_classifier import MultiLabelClassifier
 from src.utils.metrics import compute_auc, compute_f1_macro
+from omegaconf import DictConfig
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--data_dir", default="./data/ru-izard-emotions")
-    parser.add_argument("--model_path", default="./models/emotion_model")
-    parser.add_argument("--batch_size", type=int, default=32)
-    parser.add_argument("--max_length", type=int, default=128)
-    args = parser.parse_args()
-
+@hydra.main(version_base="1.3", config_path="../../configs", config_name="config")
+def main(cfg: DictConfig):
+    L.seed_everything(cfg.seed)
+    
     # DataModule
     dm = EmotionDataModule(
-        data_dir=args.data_dir,
-        model_name=args.model_path,  # load custom tokenizer
-        batch_size=args.batch_size,
-        max_length=args.max_length,
+        data_dir=cfg.data.data_dir,
+        model_name=cfg.model.model_name,  
+        batch_size=cfg.data.batch_size,
+        max_length=cfg.data.max_length,
+        num_workers=cfg.data.num_workers
     )
     dm.setup("test")
 
     # Model
-    model = BertMultiLabelClassifier.load_from_checkpoint(
-        f"{args.model_path}.ckpt",
-        model_name=args.model_path,
-        num_labels=10,
+    model = MultiLabelClassifier.load_from_checkpoint(
+        f"{cfg.paths.save_dir}/{cfg.model.model_name.replace('/', '_')}.ckpt",
+        model_name=cfg.model.model_name,
+        num_labels=cfg.data.num_labels,
     )
     model.eval()
 
@@ -40,12 +38,13 @@ def main():
                 input_ids=batch["input_ids"],
                 attention_mask=batch["attention_mask"]
             )
+
             probs = torch.sigmoid(outputs.logits)
             all_probs.append(probs.cpu())
             all_labels.append(batch["labels"].cpu())
-    y_probs = torch.cat(all_probs).numpy()
+            
     y_true = torch.cat(all_labels).numpy()
-
+    y_probs = torch.cat(all_probs).numpy()
     aucs = compute_auc(y_true, y_probs)
     f1_macro = compute_f1_macro(y_true, y_probs)
     print(f"Test ROC-AUC per class: {aucs}")
