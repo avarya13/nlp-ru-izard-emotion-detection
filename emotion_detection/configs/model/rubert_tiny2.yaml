@@ -1,0 +1,10 @@
+_target_: src.models.base_multilabel.MultiLabelClassifier
+model_name: cointegrated/rubert-tiny2
+num_labels: 10
+learning_rate: 5e-5
+weight_decay: 0.01
+loss_type: bce
+focal_gamma: 2.0
+pos_weight: null
+warmup_steps: 0
+scheduler_steps: -1

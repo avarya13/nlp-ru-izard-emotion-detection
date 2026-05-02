@@ -1,0 +1,10 @@
+_target_: src.models.base_multilabel.MultiLabelClassifier
+model_name: ai-forever/ruRoberta-large
+num_labels: 10
+learning_rate: 1e-5
+weight_decay: 0.01
+loss_type: focal
+focal_gamma: 2.0
+pos_weight: null
+warmup_steps: 0
+scheduler_steps: -1

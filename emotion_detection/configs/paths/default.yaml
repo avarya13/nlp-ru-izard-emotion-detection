@@ -1,0 +1,3 @@
+save_dir: ./models
+checkpoint_dir: ${paths.save_dir}/checkpoints
+logs_dir: ./logs

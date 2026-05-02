@@ -1,0 +1,11 @@
+defaults:
+  - data: default
+  - model: rubert_tiny2
+  - train: default
+  - paths: default
+  - _self_
+
+seed: 42
+accelerator: auto
+precision: 32
+debug: false
