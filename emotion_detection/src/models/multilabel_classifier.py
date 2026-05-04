@@ -7,7 +7,7 @@ from transformers import (
     get_linear_schedule_with_warmup,
 )
 import lightning as L
-from torchmetrics import AUROC, F1Score
+from torchmetrics import AUROC, F1Score, Precision, Recall
 from src.utils.focal_loss import FocalLoss
 
 
@@ -43,8 +43,43 @@ class MultiLabelClassifier(L.LightningModule):
         self.train_auroc = AUROC(task="multilabel", num_labels=num_labels)
         self.val_auroc = AUROC(task="multilabel", num_labels=num_labels)
         self.test_auroc = AUROC(task="multilabel", num_labels=num_labels)
-        self.val_f1 = F1Score(task="multilabel", num_labels=num_labels, average="macro")
-        self.test_f1 = F1Score(
+
+        self.train_f1_macro = F1Score(
+            task="multilabel", num_labels=num_labels, average="macro"
+        )
+        self.train_f1_micro = F1Score(
+            task="multilabel", num_labels=num_labels, average="micro"
+        )
+        self.train_precision_macro = Precision(
+            task="multilabel", num_labels=num_labels, average="macro"
+        )
+        self.train_recall_macro = Recall(
+            task="multilabel", num_labels=num_labels, average="macro"
+        )
+
+        self.val_f1_macro = F1Score(
+            task="multilabel", num_labels=num_labels, average="macro"
+        )
+        self.val_f1_micro = F1Score(
+            task="multilabel", num_labels=num_labels, average="micro"
+        )
+        self.val_precision_macro = Precision(
+            task="multilabel", num_labels=num_labels, average="macro"
+        )
+        self.val_recall_macro = Recall(
+            task="multilabel", num_labels=num_labels, average="macro"
+        )
+
+        self.test_f1_macro = F1Score(
+            task="multilabel", num_labels=num_labels, average="macro"
+        )
+        self.test_f1_micro = F1Score(
+            task="multilabel", num_labels=num_labels, average="micro"
+        )
+        self.test_precision_macro = Precision(
+            task="multilabel", num_labels=num_labels, average="macro"
+        )
+        self.test_recall_macro = Recall(
             task="multilabel", num_labels=num_labels, average="macro"
         )
 
@@ -62,10 +97,19 @@ class MultiLabelClassifier(L.LightningModule):
         self.log("train_loss", loss, prog_bar=True)
         logits = outputs.logits
         probs = torch.sigmoid(logits)
-        self.train_auroc(probs, batch["labels"].int())
-        self.log("train_auroc", self.train_auroc, prog_bar=True)
-        return loss
 
+        self.train_auroc(probs, batch["labels"].int())
+        self.train_f1_macro(probs, batch["labels"].int())
+        self.train_f1_micro(probs, batch["labels"].int())
+        self.train_precision_macro(probs, batch["labels"].int())
+        self.train_recall_macro(probs, batch["labels"].int())
+
+        self.log("train_auroc", self.train_auroc, prog_bar=True)
+        self.log("train_f1_macro", self.train_f1_macro, prog_bar=True)
+        self.log("train_f1_micro", self.train_f1_micro, prog_bar=True)
+        self.log("train_precision_macro", self.train_precision_macro, prog_bar=True)
+        self.log("train_recall_macro", self.train_recall_macro, prog_bar=True)
+        return loss
 
     def validation_step(self, batch, batch_idx):
         outputs = self.model(
@@ -76,11 +120,19 @@ class MultiLabelClassifier(L.LightningModule):
         logits = outputs.logits
         loss = self.loss_fn(logits, batch["labels"])
         probs = torch.sigmoid(logits)
+
         self.val_auroc(probs, batch["labels"].int())
-        self.val_f1(probs, batch["labels"].int())
+        self.val_f1_macro(probs, batch["labels"].int())
+        self.val_f1_micro(probs, batch["labels"].int())
+        self.val_precision_macro(probs, batch["labels"].int())
+        self.val_recall_macro(probs, batch["labels"].int())
+
         self.log("val_loss", loss, prog_bar=True)
         self.log("val_auroc", self.val_auroc, prog_bar=True)
-        self.log("val_f1_macro", self.val_f1, prog_bar=True)
+        self.log("val_f1_macro", self.val_f1_macro, prog_bar=True)
+        self.log("val_f1_micro", self.val_f1_micro, prog_bar=True)
+        self.log("val_precision_macro", self.val_precision_macro, prog_bar=True)
+        self.log("val_recall_macro", self.val_recall_macro, prog_bar=True)
         return loss
 
     def test_step(self, batch, batch_idx):
@@ -91,10 +143,18 @@ class MultiLabelClassifier(L.LightningModule):
         )
         logits = outputs.logits
         probs = torch.sigmoid(logits)
+
         self.test_auroc(probs, batch["labels"].int())
-        self.test_f1(probs, batch["labels"].int())
+        self.test_f1_macro(probs, batch["labels"].int())
+        self.test_f1_micro(probs, batch["labels"].int())
+        self.test_precision_macro(probs, batch["labels"].int())
+        self.test_recall_macro(probs, batch["labels"].int())
+
         self.log("test_auroc", self.test_auroc, prog_bar=True)
-        self.log("test_f1_macro", self.test_f1, prog_bar=True)
+        self.log("test_f1_macro", self.test_f1_macro, prog_bar=True)
+        self.log("test_f1_micro", self.test_f1_micro, prog_bar=True)
+        self.log("test_precision_macro", self.test_precision_macro, prog_bar=True)
+        self.log("test_recall_macro", self.test_recall_macro, prog_bar=True)
 
     def configure_optimizers(self):
         optimizer = optim.AdamW(
@@ -102,12 +162,12 @@ class MultiLabelClassifier(L.LightningModule):
             lr=self.hparams.learning_rate,
             weight_decay=self.hparams.weight_decay,
         )
-        
+
         if self.hparams.scheduler_steps > 0:
             total_steps = self.hparams.scheduler_steps
         else:
             total_steps = self.trainer.estimated_stepping_batches
-        
+
         if self.hparams.warmup_ratio > 0:
             warmup_steps = int(self.hparams.warmup_ratio * total_steps)
             scheduler = get_linear_schedule_with_warmup(

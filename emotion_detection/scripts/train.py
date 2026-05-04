@@ -35,7 +35,7 @@ def main(cfg: DictConfig):
     )
 
     # Model
-    model_params = {k: v for k, v in cfg.model.items() if k != 'epochs'}
+    model_params = {k: v for k, v in cfg.model.items() if k != "epochs"}
     model = MultiLabelClassifier(**model_params)
 
     trainer = L.Trainer(
@@ -61,9 +61,9 @@ def main(cfg: DictConfig):
     # with mlflow.start_run(run_id=logger.run_id):
     #     mlflow.pyfunc.log_model(
     #         artifact_path="model",
-    #         python_model=model.model,  
+    #         python_model=model.model,
     #         artifacts={
-    #             "model": save_path,  
+    #             "model": save_path,
     #             "tokenizer": save_path,
     #         }
     #     )
