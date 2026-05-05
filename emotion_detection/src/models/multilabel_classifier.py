@@ -23,6 +23,7 @@ class MultiLabelClassifier(L.LightningModule):
         loss_type: str = "bce",
         focal_gamma: float = 2.0,
         pos_weight: Optional[torch.Tensor] = None,
+        scheduler_type: str = "none", 
         warmup_ratio: float = 0.0,
     ):
         super().__init__()
@@ -93,7 +94,8 @@ class MultiLabelClassifier(L.LightningModule):
             labels=batch["labels"],
         )
 
-        loss = self.loss_fn(outputs.logits, batch["labels"])
+        loss = outputs.loss
+        # self.loss_fn(outputs.logits, batch["labels"])
         self.log("train_loss", loss, prog_bar=True)
         logits = outputs.logits
         probs = torch.sigmoid(logits)
@@ -163,18 +165,21 @@ class MultiLabelClassifier(L.LightningModule):
             weight_decay=self.hparams.weight_decay,
         )
 
-        if self.hparams.scheduler_steps > 0:
-            total_steps = self.hparams.scheduler_steps
-        else:
-            total_steps = self.trainer.estimated_stepping_batches
+        scheduler_type = self.hparams.scheduler_type
 
-        if self.hparams.warmup_ratio > 0:
-            warmup_steps = int(self.hparams.warmup_ratio * total_steps)
+        if scheduler_type == "exponential":
+            scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda epoch: 0.5 ** epoch)
+            return [optimizer], [{"scheduler": scheduler, "interval": "epoch"}]
+
+        elif scheduler_type == "linear_warmup":
+            total_steps = self.trainer.estimated_stepping_batches
+            warmup_steps = int(self.hparams.warmup_ratio * total_steps) if self.hparams.warmup_ratio > 0 else 0
             scheduler = get_linear_schedule_with_warmup(
                 optimizer,
                 num_warmup_steps=warmup_steps,
                 num_training_steps=total_steps,
             )
             return [optimizer], [{"scheduler": scheduler, "interval": "step"}]
+
         else:
             return optimizer
