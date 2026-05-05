@@ -159,26 +159,19 @@ class MultiLabelClassifier(L.LightningModule):
         self.log("test_recall_macro", self.test_recall_macro, prog_bar=True)
 
     def configure_optimizers(self):
-        optimizer = optim.AdamW(
-            self.parameters(),
-            lr=self.hparams.learning_rate,
-            weight_decay=self.hparams.weight_decay,
-        )
-
+        optimizer = optim.AdamW(self.parameters(), lr=self.hparams.learning_rate, weight_decay=self.hparams.weight_decay)
         scheduler_type = self.hparams.scheduler_type
+
+        print(self.hparams)
 
         if scheduler_type == "exponential":
             scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda epoch: 0.5 ** epoch)
             return [optimizer], [{"scheduler": scheduler, "interval": "epoch"}]
 
         elif scheduler_type == "linear_warmup":
-            total_steps = self.trainer.estimated_stepping_batches
-            warmup_steps = int(self.hparams.warmup_ratio * total_steps) if self.hparams.warmup_ratio > 0 else 0
-            scheduler = get_linear_schedule_with_warmup(
-                optimizer,
-                num_warmup_steps=warmup_steps,
-                num_training_steps=total_steps,
-            )
+            total_steps = self.hparams.scheduler_steps if self.hparams.scheduler_steps > 0 else self.trainer.estimated_stepping_batches
+            warmup_steps = int(self.hparams.warmup_ratio * total_steps)
+            scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warmup_steps, num_training_steps=total_steps)
             return [optimizer], [{"scheduler": scheduler, "interval": "step"}]
 
         else:
