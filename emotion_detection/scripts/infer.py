@@ -1,17 +1,12 @@
 import hydra
-import lightning as L
 import torch
-from src.data.emotion_datamodule import EmotionDataModule
-from src.models.multilabel_classifier import MultiLabelClassifier
-from src.utils.metrics import compute_auc, compute_f1_macro
 from omegaconf import DictConfig
-
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
+from src.data.emotion_datamodule import EmotionDataModule
+from torchmetrics import AUROC, F1Score, Precision, Recall
 
 @hydra.main(version_base="1.3", config_path="../../configs", config_name="config")
 def main(cfg: DictConfig):
-    L.seed_everything(cfg.seed)
-
-    # DataModule
     dm = EmotionDataModule(
         data_dir=cfg.data.data_dir,
         model_name=cfg.model.model_name,
@@ -20,37 +15,45 @@ def main(cfg: DictConfig):
         num_workers=cfg.data.num_workers,
     )
     dm.setup("test")
-
-    # Model
-    model = MultiLabelClassifier.load_from_checkpoint(
-        f"{cfg.paths.save_dir}/{cfg.model.model_name.replace('/', '_')}.ckpt",
-        model_name=cfg.model.model_name,
-        num_labels=cfg.data.num_labels,
-    )
+    
+    model_path = f"{cfg.paths.save_dir}/{cfg.model.model_name.replace('/', '_')}"
+    model = AutoModelForSequenceClassification.from_pretrained(model_path)
+    tokenizer = AutoTokenizer.from_pretrained(model_path)
     model.eval()
 
-    # Collect predictions on test
     test_loader = dm.test_dataloader()
-    all_labels = []
-    all_probs = []
+    all_probs, all_labels = [], []
     with torch.no_grad():
         for batch in test_loader:
-            outputs = model.model(
-                input_ids=batch["input_ids"], attention_mask=batch["attention_mask"]
+            outputs = model(
+                input_ids=batch["input_ids"],
+                attention_mask=batch["attention_mask"]
             )
-
             probs = torch.sigmoid(outputs.logits)
             all_probs.append(probs.cpu())
             all_labels.append(batch["labels"].cpu())
 
-    y_true = torch.cat(all_labels).numpy()
-    y_probs = torch.cat(all_probs).numpy()
-    aucs = compute_auc(y_true, y_probs)
-    f1_macro = compute_f1_macro(y_true, y_probs)
-    print(f"Test ROC-AUC per class: {aucs}")
-    print(f"Mean ROC-AUC: {aucs.mean():.4f}")
-    print(f"Macro F1-score: {f1_macro:.4f}")
+    y_probs = torch.cat(all_probs)
+    y_true = torch.cat(all_labels).int()
 
+    num_labels = cfg.model.num_labels  
+    auroc = AUROC(task="multilabel", num_labels=num_labels)
+    f1_macro = F1Score(task="multilabel", num_labels=num_labels, average="macro")
+    f1_micro = F1Score(task="multilabel", num_labels=num_labels, average="micro")
+    precision_macro = Precision(task="multilabel", num_labels=num_labels, average="macro")
+    recall_macro = Recall(task="multilabel", num_labels=num_labels, average="macro")
+
+    auc_score = auroc(y_probs, y_true)
+    f1_macro_score = f1_macro(y_probs, y_true)
+    f1_micro_score = f1_micro(y_probs, y_true)
+    precision_score = precision_macro(y_probs, y_true)
+    recall_score = recall_macro(y_probs, y_true)
+
+    print(f"Mean ROC-AUC: {auc_score:.4f}")
+    print(f"Macro F1-score: {f1_macro_score:.4f}")
+    print(f"Micro F1-score: {f1_micro_score:.4f}")
+    print(f"Macro Precision: {precision_score:.4f}")
+    print(f"Macro Recall: {recall_score:.4f}")
 
 if __name__ == "__main__":
     main()
