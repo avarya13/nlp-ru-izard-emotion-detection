@@ -55,5 +55,25 @@ def main(cfg: DictConfig):
     print(f"Macro Precision: {precision_score:.4f}")
     print(f"Macro Recall: {recall_score:.4f}")
 
+    from sklearn.metrics import f1_score
+    y_pred_bin = (y_probs > 0.5).int().cpu().numpy()
+    y_true_np = y_true.cpu().numpy()
+    y_probs_np = y_probs.cpu().numpy()
+
+    from sklearn.metrics import f1_score, precision_score, recall_score, roc_auc_score 
+
+    sk_auc = roc_auc_score(y_true_np, y_probs_np, average='macro')
+    sk_f1_macro = f1_score(y_true_np, y_pred_bin, average='macro')
+    sk_f1_micro = f1_score(y_true_np, y_pred_bin, average='micro')
+    sk_precision = precision_score(y_true_np, y_pred_bin, average='macro')
+    sk_recall = recall_score(y_true_np, y_pred_bin, average='macro')
+
+    print("\n--- sklearn metrics ---")
+    print(f"Macro ROC-AUC: {sk_auc:.4f}")
+    print(f"Macro F1-score: {sk_f1_macro:.4f}")
+    print(f"Micro F1-score: {sk_f1_micro:.4f}")
+    print(f"Macro Precision: {sk_precision:.4f}")
+    print(f"Macro Recall: {sk_recall:.4f}")
+
 if __name__ == "__main__":
     main()
