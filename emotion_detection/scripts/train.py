@@ -1,6 +1,7 @@
 import os
 import hydra
 import lightning as L
+from lightning.pytorch.callbacks import LearningRateMonitor
 from transformers import AutoTokenizer
 from omegaconf import DictConfig
 from src.data.emotion_datamodule import EmotionDataModule
@@ -38,15 +39,17 @@ def main(cfg: DictConfig):
     model_params = {k: v for k, v in cfg.model.items() if k != "epochs"}
     model = MultiLabelClassifier(**model_params)
 
+    lr_monitor = LearningRateMonitor(logging_interval='step')
     trainer = L.Trainer(
         max_epochs=cfg.model.epochs,
         accelerator=cfg.accelerator,
         precision=cfg.precision,
-        gradient_clip_val=cfg.train.gradient_clip_val,
-        accumulate_grad_batches=cfg.train.accumulate_grad_batches,
+        # gradient_clip_val=cfg.train.gradient_clip_val,
+        # accumulate_grad_batches=cfg.train.accumulate_grad_batches,
         log_every_n_steps=cfg.train.log_every_n_steps,
         default_root_dir=cfg.paths.save_dir,
         logger=logger,
+        callbacks=[lr_monitor]
     )
     trainer.fit(model, dm)
 
@@ -57,17 +60,6 @@ def main(cfg: DictConfig):
     tokenizer = AutoTokenizer.from_pretrained(cfg.model.model_name)
     tokenizer.save_pretrained(save_path)
     print(f"Model saved to {save_path}")
-
-    # with mlflow.start_run(run_id=logger.run_id):
-    #     mlflow.pyfunc.log_model(
-    #         artifact_path="model",
-    #         python_model=model.model,
-    #         artifacts={
-    #             "model": save_path,
-    #             "tokenizer": save_path,
-    #         }
-    #     )
-
 
 if __name__ == "__main__":
     main()
