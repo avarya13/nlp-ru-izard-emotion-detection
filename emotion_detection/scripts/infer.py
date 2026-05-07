@@ -4,6 +4,8 @@ from omegaconf import DictConfig
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 from src.data.emotion_datamodule import EmotionDataModule
 from torchmetrics import AUROC, F1Score, Precision, Recall
+from torchmetrics.classification import MultilabelRankingLoss
+from src.utils.metrics import compute_f1_macro, compute_f1_micro
 
 @hydra.main(version_base="1.3", config_path="../../configs", config_name="config")
 def main(cfg: DictConfig):
@@ -42,6 +44,7 @@ def main(cfg: DictConfig):
     f1_micro = F1Score(task="multilabel", num_labels=num_labels, average="micro")
     precision_macro = Precision(task="multilabel", num_labels=num_labels, average="macro")
     recall_macro = Recall(task="multilabel", num_labels=num_labels, average="macro")
+    lrl = MultilabelRankingLoss(num_labels=num_labels)
 
     auc_score = auroc(y_probs, y_true)
     f1_macro_score = f1_macro(y_probs, y_true)
@@ -54,6 +57,7 @@ def main(cfg: DictConfig):
     print(f"Micro F1-score: {f1_micro_score:.4f}")
     print(f"Macro Precision: {precision_score:.4f}")
     print(f"Macro Recall: {recall_score:.4f}")
+    print(f"Label Ranking Loss: {lrl:.4f}")
 
     from sklearn.metrics import f1_score
     y_pred_bin = (y_probs > 0.5).int().cpu().numpy()
@@ -74,6 +78,14 @@ def main(cfg: DictConfig):
     print(f"Micro F1-score: {sk_f1_micro:.4f}")
     print(f"Macro Precision: {sk_precision:.4f}")
     print(f"Macro Recall: {sk_recall:.4f}")
+
+    # labels_np = batch["labels"].int().cpu().detach().numpy()
+    # probs_np = probs.cpu().detach().numpy()
+    test_f1_macro = compute_f1_macro(y_true_np, y_probs_np)
+    test_f1_micro = compute_f1_micro(y_true_np, y_probs_np)
+
+    print(f'Custom F1-micro: {test_f1_micro}')
+    print(f'Custom F1-macro: {test_f1_macro}')
 
 if __name__ == "__main__":
     main()
