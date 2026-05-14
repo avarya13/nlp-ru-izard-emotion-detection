@@ -1,0 +1,22 @@
+labels:
+  - neutral
+  - joy
+  - sadness
+  - anger
+  - enthusiasm
+  - surprise
+  - disgust
+  - fear
+  - guilt
+  - shame
+labels_ru:
+  - нейтрально
+  - радость
+  - грусть
+  - гнев
+  - интерес
+  - удивление
+  - отвращение
+  - страх
+  - вина
+  - стыд

@@ -6,12 +6,12 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from omegaconf import OmegaConf
 
 
-with hydra.initialize(version_base="1.3", config_path="../conf"):
+with hydra.initialize(version_base="1.3", config_path="../../configs"):
     cfg = hydra.compose(config_name="config")
 
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
-labels_path = os.path.join(script_dir, "../conf/data/labels.yaml")
+labels_path = os.path.join(script_dir, "../../configs/data/labels.yaml")
 cfg_labels = OmegaConf.load(labels_path)
 LABELS = cfg_labels.labels
 LABELS_RU = cfg_labels.labels_ru
