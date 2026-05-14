@@ -1,31 +1,20 @@
 import torch
 from torch.utils.data import Dataset, DataLoader
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, DataCollatorWithPadding
 import lightning as L
 
 
-class EmotionDataset(Dataset):
-    def __init__(self, texts, labels, tokenizer, max_length=128):
-        self.texts = texts
+class PreTokenizedDataset(Dataset):
+    def __init__(self, encodings, labels):
+        self.encodings = encodings
         self.labels = labels
-        self.tokenizer = tokenizer
-        self.max_length = max_length
 
     def __len__(self):
-        return len(self.texts)
+        return len(self.labels)
 
     def __getitem__(self, idx):
-        text = str(self.texts[idx])
-        encoding = self.tokenizer(
-            text,
-            truncation=True,
-            padding="max_length",
-            max_length=self.max_length,
-            return_tensors="pt",
-        )
-        item = {key: val.squeeze(0) for key, val in encoding.items()}
-        if self.labels is not None:
-            item["labels"] = torch.tensor(self.labels[idx], dtype=torch.float)
+        item = {k: v for k, v in self.encodings[idx].items()}
+        item["labels"] = torch.tensor(self.labels[idx], dtype=torch.float)
         return item
 
 
@@ -35,14 +24,12 @@ class EmotionDataModule(L.LightningDataModule):
         data_dir: str,
         model_name: str,
         batch_size: int = 32,
-        max_length: int = 128,
         num_workers: int = 0,
     ):
         super().__init__()
         self.data_dir = data_dir
         self.model_name = model_name
         self.batch_size = batch_size
-        self.max_length = max_length
         self.num_workers = num_workers
 
     def prepare_data(self):
@@ -57,58 +44,72 @@ class EmotionDataModule(L.LightningDataModule):
         self.test_df = dataset["test"].to_pandas()
 
         emotion_cols = [
-            "neutral",
-            "joy",
-            "sadness",
-            "anger",
-            "enthusiasm",
-            "surprise",
-            "disgust",
-            "fear",
-            "guilt",
-            "shame",
+            "neutral", "joy", "sadness", "anger", "enthusiasm",
+            "surprise", "disgust", "fear", "guilt", "shame"
         ]
         tokenizer = AutoTokenizer.from_pretrained(self.model_name)
 
-        self.train_dataset = EmotionDataset(
-            self.train_df["text"],
-            self.train_df[emotion_cols].values,
-            tokenizer,
-            self.max_length,
+        def tokenize_texts(texts):
+            encodings = []
+            for text in texts:
+                encoding = tokenizer(
+                    str(text),
+                    truncation=True,
+                    padding=False,
+                    return_tensors="pt"
+                )
+                
+                encoding = {k: v.squeeze(0) for k, v in encoding.items()}
+                encodings.append(encoding)
+            return encodings
+
+        train_encodings = tokenize_texts(self.train_df["text"])
+        val_encodings   = tokenize_texts(self.val_df["text"])
+        test_encodings  = tokenize_texts(self.test_df["text"])
+
+        self.train_dataset = PreTokenizedDataset(
+            train_encodings,
+            self.train_df[emotion_cols].values
         )
-        self.val_dataset = EmotionDataset(
-            self.val_df["text"],
-            self.val_df[emotion_cols].values,
-            tokenizer,
-            self.max_length,
+        self.val_dataset = PreTokenizedDataset(
+            val_encodings,
+            self.val_df[emotion_cols].values
         )
-        self.test_dataset = EmotionDataset(
-            self.test_df["text"],
-            self.test_df[emotion_cols].values,
-            tokenizer,
-            self.max_length,
+        self.test_dataset = PreTokenizedDataset(
+            test_encodings,
+            self.test_df[emotion_cols].values
         )
 
     def train_dataloader(self):
+        tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        collate_fn = DataCollatorWithPadding(tokenizer)
         return DataLoader(
             self.train_dataset,
             batch_size=self.batch_size,
+            drop_last=False,
             shuffle=True,
+            collate_fn=collate_fn,
             num_workers=self.num_workers,
         )
 
     def val_dataloader(self):
+        tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        collate_fn = DataCollatorWithPadding(tokenizer)
         return DataLoader(
             self.val_dataset,
             batch_size=self.batch_size,
             shuffle=False,
+            collate_fn=collate_fn,
             num_workers=self.num_workers,
         )
 
     def test_dataloader(self):
+        tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        collate_fn = DataCollatorWithPadding(tokenizer)
         return DataLoader(
             self.test_dataset,
             batch_size=self.batch_size,
             shuffle=False,
+            collate_fn=collate_fn,
             num_workers=self.num_workers,
         )
