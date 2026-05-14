@@ -9,3 +9,4 @@ pos_weight: null
 warmup_steps: null
 warmup_ratio: 0.15
 scheduler_steps: null
+scheduler_type: "linear_warmup"
