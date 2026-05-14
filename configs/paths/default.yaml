@@ -2,3 +2,4 @@ save_dir: ./models
 checkpoint_dir: ${paths.save_dir}/checkpoints
 logs_dir: ./logs
 mlflow_dir: ${hydra:runtime.cwd}/mlflow
+timestamp: null
