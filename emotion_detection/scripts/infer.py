@@ -1,3 +1,4 @@
+from pathlib import Path
 import hydra
 import torch
 from omegaconf import DictConfig
@@ -13,12 +14,32 @@ def main(cfg: DictConfig):
         data_dir=cfg.data.data_dir,
         model_name=cfg.model.model_name,
         batch_size=cfg.data.batch_size,
-        max_length=cfg.data.max_length,
+        # max_length=cfg.data.max_length,
         num_workers=cfg.data.num_workers,
     )
     dm.setup("test")
+
+    base_path = f"{cfg.paths.save_dir}/{cfg.model.model_name.replace('/', '_')}"
+    timestamp = cfg.paths.timestamp
+    if timestamp:
+        model_path = f"{base_path}/{timestamp}"
+        print(f"Loading model from specified timestamp: {model_path}")
+    else:
+        base = Path(base_path)
+        if base.exists():
+            subdirs = [d for d in base.iterdir() if d.is_dir() and len(d.name) == 13 and d.name[8] == '-']
+            if subdirs:
+                latest = max(subdirs, key=lambda d: d.name)   
+                model_path = str(latest)
+                print(f"Using latest timestamped model: {model_path}")
+            else:
+                model_path = base_path
+                print(f"No timestamped subdir found, using base path: {model_path}")
+        else:
+            model_path = base_path
+            print(f"Base path does not exist: {base_path}")
     
-    model_path = f"{cfg.paths.save_dir}/{cfg.model.model_name.replace('/', '_')}"
+    # model_path = f"{cfg.paths.save_dir}/{cfg.model.model_name.replace('/', '_')}"
     model = AutoModelForSequenceClassification.from_pretrained(model_path)
     tokenizer = AutoTokenizer.from_pretrained(model_path)
     model.eval()
@@ -31,7 +52,8 @@ def main(cfg: DictConfig):
                 input_ids=batch["input_ids"],
                 attention_mask=batch["attention_mask"]
             )
-            probs = torch.sigmoid(outputs.logits)
+            # probs = torch.sigmoid(outputs.logits)
+            probs = torch.softmax(outputs.logits, -1)
             all_probs.append(probs.cpu())
             all_labels.append(batch["labels"].cpu())
 
@@ -44,13 +66,17 @@ def main(cfg: DictConfig):
     f1_micro = F1Score(task="multilabel", num_labels=num_labels, average="micro")
     precision_macro = Precision(task="multilabel", num_labels=num_labels, average="macro")
     recall_macro = Recall(task="multilabel", num_labels=num_labels, average="macro")
-    lrl = MultilabelRankingLoss(num_labels=num_labels)
+    ranking_loss = MultilabelRankingLoss(num_labels=num_labels)
+
+    print(f"probs: {y_probs}")
 
     auc_score = auroc(y_probs, y_true)
     f1_macro_score = f1_macro(y_probs, y_true)
     f1_micro_score = f1_micro(y_probs, y_true)
     precision_score = precision_macro(y_probs, y_true)
     recall_score = recall_macro(y_probs, y_true)
+    ranking_loss.update(y_probs, y_true)
+    lrl = ranking_loss.compute().item()
 
     print(f"Mean ROC-AUC: {auc_score:.4f}")
     print(f"Macro F1-score: {f1_macro_score:.4f}")
