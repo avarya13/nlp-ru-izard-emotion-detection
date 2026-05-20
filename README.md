@@ -132,6 +132,12 @@ mlflow server --host 127.0.0.1 --port 8080 --backend-store-uri file:./mlflow
 uv run python -m scripts.train model=ruroberta_large
 ```
 
+If you need to apply Softmax activation to the model's output (for example, to the authors of the `ruizard-emotions` dataset), use the `model.activation=softmax`:
+
+```bash
+uv run python src/inference.py model=rubert_tiny model.activation=softmax
+```
+
 During training, hyperparameters and loss and metric values ​​are logged to the `/logs` directory. At the end of training, loss and metric graphs are plotted and saved to the `/plots` directory. Folders `/logs` and `/plots` are created during the learning process.
 
 ## Inference
