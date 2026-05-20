@@ -132,6 +132,8 @@ mlflow server --host 127.0.0.1 --port 8080 --backend-store-uri file:./mlflow
 uv run python -m scripts.train model=ruroberta_large
 ```
 
+During training, hyperparameters and loss and metric values ​​are logged to the `/logs` directory. At the end of training, loss and metric graphs are plotted and saved to the `/plots` directory. Folders `/logs` and `/plots` are created during the learning process.
+
 ## Inference
 
 ### Batch Inference
