@@ -1,4 +1,5 @@
 emotion_detection/outputs/
+emotion_detection/models/
 mlflow
 
 __pycache__/
@@ -24,9 +25,6 @@ docs/_build/
 
 # pipenv
 Pipfile.lock
-
-# UV
-uv.lock
 
 # poetry
 poetry.lock
