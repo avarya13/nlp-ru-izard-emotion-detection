@@ -1,5 +1,7 @@
 emotion_detection/outputs/
 emotion_detection/models/
+emotion_detection/plots/
+emotion_detection/logs/
 node_modules/
 dvc_data/
 mlflow
