@@ -108,6 +108,15 @@ uv run python scripts/download_data.py
 
 The dataset will be stored in the `emotion_detection/data` directory.
 
+#### Experiment Tracking
+
+The project uses [MLflow](https://mlflow.org/) for experiment tracking.
+Start MLflow UI:
+
+```bash
+mlflow server --host 127.0.0.1 --port 8080 --backend-store-uri file:./mlflow
+```
+
 ### Training
 
 #### Available Models
@@ -123,21 +132,6 @@ The dataset will be stored in the `emotion_detection/data` directory.
 uv run python -m scripts.train model=ruroberta_large
 ```
 
-#### Experiment Tracking
-
-The project uses [https://mlflow.org/](MLflow) for experiment tracking.
-Start MLflow UI::
-
-```bash
-uv run mlflow ui --backend-store-uri file:./mlflow
-```
-
-Open the link:
-
-```
-http://127.0.0.1:5000
-```
-
 ## Inference
 
 ### Batch Inference
@@ -151,7 +145,7 @@ uv run python -m scripts.infer model=ruroberta_large
 Example:
 
 ```bash
-uv run python scripts/predict.py --model_path ./models/ai-forever_ruRoberta-large --text "Сегодня отличный день!"
+uv run python -m scripts/predict.py model=ruroberta_large +text="Сегодня отличный день!"
 ```
 
 ## Results
