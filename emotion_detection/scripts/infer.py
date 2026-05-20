@@ -4,6 +4,7 @@ import hydra
 import torch
 from omegaconf import DictConfig
 from src.data.emotion_datamodule import EmotionDataModule
+from src.utils.dvc_pull import dvc_pull
 from src.utils.metrics import compute_f1_macro, compute_f1_micro
 from torchmetrics import AUROC, F1Score, Precision, Recall
 from torchmetrics.classification import MultilabelRankingLoss
@@ -12,6 +13,7 @@ from transformers import AutoModelForSequenceClassification
 
 @hydra.main(version_base="1.3", config_path="../../configs", config_name="config")
 def main(cfg: DictConfig):
+    dvc_pull()
     dm = EmotionDataModule(
         data_dir=cfg.data.data_dir,
         model_name=cfg.model.model_name,

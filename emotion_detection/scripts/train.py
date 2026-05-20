@@ -9,6 +9,7 @@ from lightning.pytorch.callbacks import LearningRateMonitor, ModelCheckpoint
 from omegaconf import DictConfig
 from src.data.emotion_datamodule import EmotionDataModule
 from src.models.multilabel_classifier import MultiLabelClassifier
+from src.utils.dvc_pull import dvc_pull
 from transformers import AutoTokenizer
 
 # mlflow.pytorch.autolog(log_every_n_epoch=1, log_models=False)
@@ -19,6 +20,8 @@ from transformers import AutoTokenizer
 def main(cfg: DictConfig):
     L.seed_everything(cfg.seed)
     timestamp = datetime.now().strftime("%Y%m%d-%H%M")
+
+    dvc_pull()
 
     # DataModule
     dm = EmotionDataModule(

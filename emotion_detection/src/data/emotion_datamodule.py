@@ -1,5 +1,6 @@
 import lightning as L
 import torch
+from datasets import load_from_disk
 from torch.utils.data import DataLoader, Dataset
 from transformers import AutoTokenizer, DataCollatorWithPadding
 
@@ -36,8 +37,6 @@ class EmotionDataModule(L.LightningDataModule):
         pass
 
     def setup(self, stage=None):
-        from datasets import load_from_disk
-
         dataset = load_from_disk(self.data_dir)
         self.train_df = dataset["train"].to_pandas()
         self.val_df = dataset["validation"].to_pandas()
