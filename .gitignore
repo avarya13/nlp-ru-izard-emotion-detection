@@ -1,6 +1,7 @@
 emotion_detection/outputs/
 emotion_detection/models/
 node_modules/
+dvc_data/
 mlflow
 
 __pycache__/
