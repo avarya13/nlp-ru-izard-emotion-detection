@@ -9,3 +9,4 @@ pos_weight: null
 warmup_steps: 0
 scheduler_steps: -1
 scheduler_type: "linear_warmup"
+activation: sigmoid

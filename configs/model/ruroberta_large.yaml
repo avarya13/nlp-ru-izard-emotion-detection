@@ -10,3 +10,4 @@ warmup_steps: null
 warmup_ratio: 0.15
 scheduler_steps: null
 scheduler_type: "linear_warmup"
+activation: sigmoid
