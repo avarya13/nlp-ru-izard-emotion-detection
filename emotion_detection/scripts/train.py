@@ -3,8 +3,6 @@ from datetime import datetime
 
 import hydra
 import lightning as L
-
-# import mlflow.pytorch
 from lightning.pytorch.callbacks import LearningRateMonitor, ModelCheckpoint
 from omegaconf import DictConfig
 from src.data.emotion_datamodule import EmotionDataModule
@@ -12,8 +10,7 @@ from src.models.multilabel_classifier import MultiLabelClassifier
 from src.utils.dvc_pull import dvc_pull
 from transformers import AutoTokenizer
 
-# mlflow.pytorch.autolog(log_every_n_epoch=1, log_models=False)
-# TODO: fix mlflow formatting
+import mlflow.pytorch
 
 
 @hydra.main(version_base="1.3", config_path="../../configs", config_name="config")
@@ -34,7 +31,7 @@ def main(cfg: DictConfig):
 
     logger = L.pytorch.loggers.MLFlowLogger(
         experiment_name="emotion_classification",
-        tracking_uri=cfg.paths.mlflow_dir,
+        tracking_uri=cfg.paths.mlflow_uri,
         tags={
             "project": f"ru_izard_{cfg.model.model_name}",
             "user": os.getenv("USER", "unknown"),
@@ -79,4 +76,5 @@ def main(cfg: DictConfig):
 
 
 if __name__ == "__main__":
+    mlflow.pytorch.autolog(log_every_n_epoch=1, log_models=False)
     main()
