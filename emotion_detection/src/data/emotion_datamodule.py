@@ -1,7 +1,7 @@
-import torch
-from torch.utils.data import Dataset, DataLoader
-from transformers import AutoTokenizer, DataCollatorWithPadding
 import lightning as L
+import torch
+from torch.utils.data import DataLoader, Dataset
+from transformers import AutoTokenizer, DataCollatorWithPadding
 
 
 class PreTokenizedDataset(Dataset):
@@ -44,8 +44,16 @@ class EmotionDataModule(L.LightningDataModule):
         self.test_df = dataset["test"].to_pandas()
 
         emotion_cols = [
-            "neutral", "joy", "sadness", "anger", "enthusiasm",
-            "surprise", "disgust", "fear", "guilt", "shame"
+            "neutral",
+            "joy",
+            "sadness",
+            "anger",
+            "enthusiasm",
+            "surprise",
+            "disgust",
+            "fear",
+            "guilt",
+            "shame",
         ]
         tokenizer = AutoTokenizer.from_pretrained(self.model_name)
 
@@ -53,31 +61,25 @@ class EmotionDataModule(L.LightningDataModule):
             encodings = []
             for text in texts:
                 encoding = tokenizer(
-                    str(text),
-                    truncation=True,
-                    padding=False,
-                    return_tensors="pt"
+                    str(text), truncation=True, padding=False, return_tensors="pt"
                 )
-                
+
                 encoding = {k: v.squeeze(0) for k, v in encoding.items()}
                 encodings.append(encoding)
             return encodings
 
         train_encodings = tokenize_texts(self.train_df["text"])
-        val_encodings   = tokenize_texts(self.val_df["text"])
-        test_encodings  = tokenize_texts(self.test_df["text"])
+        val_encodings = tokenize_texts(self.val_df["text"])
+        test_encodings = tokenize_texts(self.test_df["text"])
 
         self.train_dataset = PreTokenizedDataset(
-            train_encodings,
-            self.train_df[emotion_cols].values
+            train_encodings, self.train_df[emotion_cols].values
         )
         self.val_dataset = PreTokenizedDataset(
-            val_encodings,
-            self.val_df[emotion_cols].values
+            val_encodings, self.val_df[emotion_cols].values
         )
         self.test_dataset = PreTokenizedDataset(
-            test_encodings,
-            self.test_df[emotion_cols].values
+            test_encodings, self.test_df[emotion_cols].values
         )
 
     def train_dataloader(self):

@@ -1,10 +1,10 @@
 import argparse
-import torch
 import os
-import hydra
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
-from omegaconf import OmegaConf
 
+import hydra
+import torch
+from omegaconf import OmegaConf
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 with hydra.initialize(version_base="1.3", config_path="../../configs"):
     cfg = hydra.compose(config_name="config")

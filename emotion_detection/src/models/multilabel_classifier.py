@@ -1,16 +1,17 @@
 from typing import Optional
+
+import lightning as L
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from src.utils.focal_loss import FocalLoss
+from src.utils.metrics import compute_f1_macro, compute_f1_micro
+from torchmetrics import AUROC, F1Score, Precision, Recall
+from torchmetrics.classification import MultilabelRankingLoss
 from transformers import (
     AutoModelForSequenceClassification,
     get_linear_schedule_with_warmup,
 )
-import lightning as L
-from torchmetrics import AUROC, F1Score, Precision, Recall
-from torchmetrics.classification import MultilabelRankingLoss
-from src.utils.focal_loss import FocalLoss
-from src.utils.metrics import compute_f1_macro, compute_f1_micro 
 
 
 class MultiLabelClassifier(L.LightningModule):
@@ -25,7 +26,7 @@ class MultiLabelClassifier(L.LightningModule):
         loss_type: str = "bce",
         focal_gamma: float = 2.0,
         pos_weight: Optional[torch.Tensor] = None,
-        scheduler_type: str = "none", 
+        scheduler_type: str = "none",
         warmup_ratio: float = 0.0,
     ):
         super().__init__()
@@ -125,15 +126,39 @@ class MultiLabelClassifier(L.LightningModule):
         self.log("train_recall_macro", self.train_recall_macro, prog_bar=True)
         self.log("train_ranking_loss", self.train_ranking_loss, prog_bar=True)
         return loss
-    
+
     # def on_train_epoch_end(self):
-    #     self.log("train_auroc", self.train_auroc.compute(), prog_bar=True)
-    #     self.log("train_f1_macro", self.train_f1_macro.compute(), prog_bar=True)
-    #     self.log("train_f1_micro", self.train_f1_micro.compute(), prog_bar=True)
-    #     self.log("train_precision_macro", self.train_precision_macro.compute(), prog_bar=True)
-    #     self.log("train_recall_macro", self.train_recall_macro.compute(), prog_bar=True)
-    #     self.log("train_ranking_loss", self.train_ranking_loss.compute(), prog_bar=True)
-    
+    #     self.log(
+    #           "train_auroc",
+    #           self.train_auroc.compute(),
+    #           prog_bar=True
+    #     )
+    #     self.log(
+    #           "train_f1_macro",
+    #           self.train_f1_macro.compute(),
+    #           prog_bar=True
+    #     )
+    #     self.log(
+    #           "train_f1_micro",
+    #           self.train_f1_micro.compute(),
+    #           prog_bar=True
+    #     )
+    #     self.log(
+    #           "train_precision_macro",
+    #           self.train_precision_macro.compute(),
+    #           prog_bar=True
+    #     )
+    #     self.log(
+    #           "train_recall_macro",
+    #           self.train_recall_macro.compute(),
+    #           prog_bar=True
+    #     )
+    #     self.log(
+    #           "train_ranking_loss",
+    #           self.train_ranking_loss.compute(),
+    #           prog_bar=True
+    #     )
+
     #     self.train_auroc.reset()
     #     self.train_f1_macro.reset()
     #     self.train_f1_micro.reset()
@@ -174,12 +199,16 @@ class MultiLabelClassifier(L.LightningModule):
         self.log("custom_val_f1_micro", custom_val_f1_micro, prog_bar=True)
         self.log("val_ranking_loss", self.val_ranking_loss, prog_bar=True)
         return loss
-    
+
     # def on_validation_epoch_end(self):
     #     self.log("val_auroc", self.val_auroc.compute(), prog_bar=True)
     #     self.log("val_f1_macro", self.val_f1_macro.compute(), prog_bar=True)
     #     self.log("val_f1_micro", self.val_f1_micro.compute(), prog_bar=True)
-    #     self.log("val_precision_macro", self.val_precision_macro.compute(), prog_bar=True)
+    #     self.log(
+    #           "val_precision_macro",
+    #           self.val_precision_macro.compute(),
+    #           prog_bar=True
+    #     )
     #     self.log("val_recall_macro", self.val_recall_macro.compute(), prog_bar=True)
     #     self.log("val_ranking_loss", self.val_ranking_loss.compute(), prog_bar=True)
 
@@ -189,7 +218,6 @@ class MultiLabelClassifier(L.LightningModule):
     #     self.val_precision_macro.reset()
     #     self.val_recall_macro.reset()
     #     self.val_ranking_loss.reset()
-    
 
     # def test_step(self, batch, batch_idx):
     #     outputs = self.model(
@@ -209,23 +237,39 @@ class MultiLabelClassifier(L.LightningModule):
     #     self.log("test_auroc", self.test_auroc, prog_bar=True)
     #     self.log("test_f1_macro", self.test_f1_macro, prog_bar=True)
     #     self.log("test_f1_micro", self.test_f1_micro, prog_bar=True)
-    #     self.log("test_precision_macro", self.test_precision_macro, prog_bar=True)
+    #     self.log(
+    #           "test_precision_macro",
+    #           self.test_precision_macro,
+    #           prog_bar=True
+    #     )
     #     self.log("test_recall_macro", self.test_recall_macro, prog_bar=True)
 
     def configure_optimizers(self):
-        optimizer = optim.AdamW(self.parameters(), lr=self.hparams.learning_rate, weight_decay=self.hparams.weight_decay)
+        optimizer = optim.AdamW(
+            self.parameters(),
+            lr=self.hparams.learning_rate,
+            weight_decay=self.hparams.weight_decay,
+        )
         scheduler_type = self.hparams.scheduler_type
 
         print(self.hparams)
 
         if scheduler_type == "exponential":
-            scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda epoch: 0.5 ** epoch)
+            scheduler = optim.lr_scheduler.LambdaLR(
+                optimizer, lr_lambda=lambda epoch: 0.5**epoch
+            )
             return [optimizer], [{"scheduler": scheduler, "interval": "epoch"}]
 
         elif scheduler_type == "linear_warmup":
-            total_steps = self.hparams.scheduler_steps if self.hparams.scheduler_steps > 0 else self.trainer.estimated_stepping_batches
+            total_steps = (
+                self.hparams.scheduler_steps
+                if self.hparams.scheduler_steps > 0
+                else self.trainer.estimated_stepping_batches
+            )
             warmup_steps = int(self.hparams.warmup_ratio * total_steps)
-            scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warmup_steps, num_training_steps=total_steps)
+            scheduler = get_linear_schedule_with_warmup(
+                optimizer, num_warmup_steps=warmup_steps, num_training_steps=total_steps
+            )
             return [optimizer], [{"scheduler": scheduler, "interval": "step"}]
 
         else:

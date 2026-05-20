@@ -1,5 +1,5 @@
-from datasets import load_dataset
 import fire
+from datasets import load_dataset
 
 
 def download(path: str = "Djacon/ru-izard-emotions", target_dir: str = "./data"):
