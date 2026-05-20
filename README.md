@@ -30,7 +30,7 @@ mlops-ru-izard-emotion-detection/
 │
 ├── emotion_detection/
 │   ├── scripts/
-│   │   ├── download_data.py # Dataset download
+│   │   ├── download_data.py # Dataset download (directly from Hugging Face)
 │   │   ├── train.py         # Model training
 │   │   ├── infer.py         # Batch inference
 │   │   └── predict.py       # Single-text prediction
@@ -93,7 +93,14 @@ uv run pre-commit run -a
 
 ### Data Download
 
-Download the dataset:
+Dataset is managed using DVC.
+To download data:
+
+```bash
+uv run dvc pull
+```
+
+If necessary, you can download the dataset directly from Hugging Face:
 
 ```bash
 uv run python scripts/download_data.py
@@ -108,7 +115,7 @@ The dataset will be stored in the `emotion_detection/data` directory.
 - `ruroberta_large`
 - `rubert_tiny2`
 - `rubert_base`
-- `rubert-base-cased-conv`.
+- `rubert-base-cased-conv`
 
 #### Train Model
 
