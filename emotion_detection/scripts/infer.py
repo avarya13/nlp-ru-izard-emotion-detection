@@ -25,7 +25,7 @@ def main(cfg: DictConfig):
 
     dm.setup("test")
 
-    base_path = Path(cfg.paths.save_dir) / cfg.model.model_name.replace("/", "_")
+    base_path = Path(cfg.paths.save_dir) / cfg.model.model_name.replace("/", "-")
 
     timestamp = cfg.paths.timestamp
 

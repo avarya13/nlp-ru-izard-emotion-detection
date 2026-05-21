@@ -7,7 +7,7 @@ import pandas as pd
 def save_all_plots(
     csv_path: Path, output_dir: Path, model_name: str, timestamp: str
 ) -> None:
-    output_dir = output_dir / model_name.replace("/", "_") / timestamp
+    output_dir = output_dir / model_name.replace("/", "-") / timestamp
     output_dir.mkdir(parents=True, exist_ok=True)
     print(f"Plot directory: {output_dir}")
 
