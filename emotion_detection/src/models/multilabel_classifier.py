@@ -81,10 +81,12 @@ class MultiLabelClassifier(L.LightningModule):
         )
 
         loss = outputs.loss
-        # self.loss_fn(outputs.logits, batch["labels"])
-        self.log("train_loss", loss, prog_bar=True)
         logits = outputs.logits
-        probs = torch.sigmoid(logits)
+
+        if self.hparams.activation == "softmax":
+            probs = torch.softmax(logits, dim=-1)
+        else:
+            probs = torch.sigmoid(logits)
 
         self.train_f1_macro(probs, batch["labels"].int())
         self.train_f1_micro(probs, batch["labels"].int())
@@ -96,12 +98,49 @@ class MultiLabelClassifier(L.LightningModule):
         custom_train_f1_macro = compute_f1_macro(labels_np, probs_np)
         custom_train_f1_micro = compute_f1_micro(labels_np, probs_np)
 
-        self.log("train_f1_macro", self.train_f1_macro, prog_bar=True)
-        self.log("train_f1_micro", self.train_f1_micro, prog_bar=True)
-        self.log("custom_train_f1_macro", custom_train_f1_macro, prog_bar=True)
-        self.log("custom_train_f1_micro", custom_train_f1_micro, prog_bar=True)
-        self.log("train_precision_macro", self.train_precision_macro, prog_bar=True)
-        self.log("train_recall_macro", self.train_recall_macro, prog_bar=True)
+        self.log("train_loss", loss, on_epoch=True, on_step=False, prog_bar=True)
+        self.log(
+            "train_f1_macro",
+            self.train_f1_macro,
+            on_epoch=True,
+            on_step=False,
+            prog_bar=True,
+        )
+        self.log(
+            "train_f1_micro",
+            self.train_f1_micro,
+            on_epoch=True,
+            on_step=False,
+            prog_bar=True,
+        )
+        self.log(
+            "custom_train_f1_macro",
+            custom_train_f1_macro,
+            on_epoch=True,
+            on_step=False,
+            prog_bar=True,
+        )
+        self.log(
+            "custom_train_f1_micro",
+            custom_train_f1_micro,
+            on_epoch=True,
+            on_step=False,
+            prog_bar=True,
+        )
+        self.log(
+            "train_precision_macro",
+            self.train_precision_macro,
+            on_epoch=True,
+            on_step=False,
+            prog_bar=True,
+        )
+        self.log(
+            "train_recall_macro",
+            self.train_recall_macro,
+            on_epoch=True,
+            on_step=False,
+            prog_bar=True,
+        )
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -112,8 +151,11 @@ class MultiLabelClassifier(L.LightningModule):
         )
         logits = outputs.logits
         loss = outputs.loss
-        # loss = self.loss_fn(logits, batch["labels"])
-        probs = torch.sigmoid(logits)
+
+        if self.hparams.activation == "softmax":
+            probs = torch.softmax(logits, dim=-1)
+        else:
+            probs = torch.sigmoid(logits)
 
         self.val_f1_macro(probs, batch["labels"].int())
         self.val_f1_micro(probs, batch["labels"].int())
@@ -125,13 +167,49 @@ class MultiLabelClassifier(L.LightningModule):
         custom_val_f1_macro = compute_f1_macro(labels_np, probs_np)
         custom_val_f1_micro = compute_f1_micro(labels_np, probs_np)
 
-        self.log("val_loss", loss, prog_bar=True)
-        self.log("val_f1_macro", self.val_f1_macro, prog_bar=True)
-        self.log("val_f1_micro", self.val_f1_micro, prog_bar=True)
-        self.log("val_precision_macro", self.val_precision_macro, prog_bar=True)
-        self.log("val_recall_macro", self.val_recall_macro, prog_bar=True)
-        self.log("custom_val_f1_macro", custom_val_f1_macro, prog_bar=True)
-        self.log("custom_val_f1_micro", custom_val_f1_micro, prog_bar=True)
+        self.log("val_loss", loss, on_epoch=True, on_step=False, prog_bar=True)
+        self.log(
+            "val_f1_macro",
+            self.val_f1_macro,
+            on_epoch=True,
+            on_step=False,
+            prog_bar=True,
+        )
+        self.log(
+            "val_f1_micro",
+            self.val_f1_micro,
+            on_epoch=True,
+            on_step=False,
+            prog_bar=True,
+        )
+        self.log(
+            "val_precision_macro",
+            self.val_precision_macro,
+            on_epoch=True,
+            on_step=False,
+            prog_bar=True,
+        )
+        self.log(
+            "val_recall_macro",
+            self.val_recall_macro,
+            on_epoch=True,
+            on_step=False,
+            prog_bar=True,
+        )
+        self.log(
+            "custom_val_f1_macro",
+            custom_val_f1_macro,
+            on_epoch=True,
+            on_step=False,
+            prog_bar=True,
+        )
+        self.log(
+            "custom_val_f1_micro",
+            custom_val_f1_micro,
+            on_epoch=True,
+            on_step=False,
+            prog_bar=True,
+        )
         return loss
 
     def configure_optimizers(self):

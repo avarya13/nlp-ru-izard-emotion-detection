@@ -32,10 +32,15 @@ def save_all_plots(
                 plt.plot(
                     train_data["epoch"], train_data[train_metric], label=train_metric
                 )
+
+            train_data = train_data.sort_values("epoch")
+            val_data = val_data.sort_values("epoch")
+
             if not val_data.empty:
                 plt.plot(val_data["epoch"], val_data[val_metric], label=val_metric)
             plt.xlabel("Epoch")
             plt.ylabel("Value")
+            plt.xlim(0)
             plt.title(f"{train_metric} / {val_metric}")
             plt.legend()
             plt.grid(True)
@@ -54,6 +59,7 @@ def save_all_plots(
         plt.plot(val_loss["epoch"], val_loss["val_loss"], label="val_loss")
         plt.xlabel("Epoch")
         plt.ylabel("Loss")
+        plt.xlim(0)
         plt.title("Training and Validation Loss")
         plt.legend()
         plt.grid(True)
