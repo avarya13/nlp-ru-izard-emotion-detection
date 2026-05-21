@@ -6,6 +6,9 @@ defaults:
   - logger: mlflow
   - _self_
 
+triton:
+  url: localhost:8000
+
 seed: 42
 accelerator: auto
 precision: 32

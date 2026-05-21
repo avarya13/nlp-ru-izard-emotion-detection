@@ -1,4 +1,5 @@
 model_name: DeepPavlov/rubert-base-cased-conversational
+triton_name: DeepPavlov-rubert-base-cased-conversational
 epochs: 8
 num_labels: 10
 learning_rate: 2e-5

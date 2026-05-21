@@ -1,4 +1,5 @@
 model_name: ai-forever/ruRoberta-large
+triton_name: ai-forever-ruRoberta-large
 epochs: 10
 num_labels: 10
 learning_rate: 1e-5
