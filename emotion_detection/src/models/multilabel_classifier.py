@@ -27,6 +27,7 @@ class MultiLabelClassifier(L.LightningModule):
         pos_weight: Optional[torch.Tensor] = None,
         scheduler_type: str = "none",
         warmup_ratio: float = 0.0,
+        activation: str = "sigmoid",
     ):
         super().__init__()
         self.save_hyperparameters()
