@@ -194,7 +194,7 @@ Two evaluation procedures are reported:
 - `torch` — metrics computed directly with PyTorch/TorchMetrics
 - `authors` — metrics computed using the official evaluation script from the original repository of the dataset's authors
 
-The authors report different training settings and evaluation results in the original repository code and in the published README / Hugging Face model card.
+The authors report different training settings and evaluation results in the original repository code and in the published [README](https://github.com/Djacon/russian-emotion-detection) / [Hugging Face](https://huggingface.co/datasets/Djacon/ru-izard-emotions) model card.
 For this reason, two `ruBERT-tiny2` models were fine-tuned with two sets of hyperparameters.
 
 ### Results with SoftMax activation
