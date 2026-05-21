@@ -1,4 +1,5 @@
 emotion_detection/inference_results/
+emotion_detection/tensorrt_models/
 emotion_detection/onnx_models/
 emotion_detection/outputs/
 emotion_detection/models/
