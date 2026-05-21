@@ -7,7 +7,8 @@ emotion_detection/plots/
 emotion_detection/logs/
 node_modules/
 dvc_data/
-mlflow
+outputs/
+mlflow/
 *.onnx
 
 __pycache__/
