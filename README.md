@@ -32,7 +32,7 @@ mlops-ru-izard-emotion-detection/
 │   ├── scripts/
 │   │   ├── download_data.py # Dataset download (directly from Hugging Face)
 │   │   ├── train.py         # Model training
-│   │   ├── infer.py         # Batch inference
+│   │   ├── evaluate.py      # Batch inference
 │   │   └── predict.py       # Single-text prediction
 │   │
 │   └── src/
@@ -48,34 +48,20 @@ mlops-ru-izard-emotion-detection/
 
 ## Setup
 
-### 1. Clone Repository
+### Clone Repository
 
 ```bash
-git clone <repository_url>
-cd mlops-ru-izard-emotion-detection/emotion_detection
+git clone https://github.com/avarya13/multi-label-emotion-detection.git
+cd multi-label-emotion-detection
 ```
 
-### 2. Install uv
-
-#### Linux / macOS
-
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
-
-#### Windows
-
-```bash
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-```
-
-### 3. Create Environment and Install Dependencies
+### Create Environment and Install Dependencies
 
 ```bash
 uv sync
 ```
 
-### 4. Quality Check
+### Quality Check
 
 Install pre-commit hooks:
 
@@ -108,13 +94,13 @@ uv run python scripts/download_data.py
 
 The dataset will be stored in the `emotion_detection/data` directory.
 
-#### Experiment Tracking
+### Experiment Tracking
 
 The project uses [MLflow](https://mlflow.org/) for experiment tracking.
 Start MLflow UI:
 
 ```bash
-mlflow server --host 127.0.0.1 --port 8080 --backend-store-uri file:./mlflow
+uv run mlflow server --host 127.0.0.1 --port 8080 --backend-store-uri file:./mlflow
 ```
 
 ### Training
@@ -132,50 +118,103 @@ mlflow server --host 127.0.0.1 --port 8080 --backend-store-uri file:./mlflow
 uv run python -m scripts.train model=ruroberta_large
 ```
 
-If you need to apply Softmax activation to the model's output (for example, to the authors of the `ruizard-emotions` dataset), use the `model.activation=softmax`:
+During training, hyperparameters, losses, and evaluation metrics are logged to the `/logs` directory. At the end of training, loss and metric graphs are plotted and saved to the `/plots` directory. The `/logs` and `/plots` directories are created automatically during training.
+
+## Model export
+
+### Export to ONNX
 
 ```bash
-uv run python src/inference.py model=rubert_tiny model.activation=softmax
+uv run python -m scripts.export_onnx model=rubert_tiny2
 ```
 
-During training, hyperparameters and loss and metric values ​​are logged to the `/logs` directory. At the end of training, loss and metric graphs are plotted and saved to the `/plots` directory. Folders `/logs` and `/plots` are created during the learning process.
+### Export to TensorRT
+
+```bash
+scripts/export_tensorrt.sh \
+  onnx_models/model_name/model.onnx \
+  tensorrt_models/model_name/model.engine
+```
 
 ## Inference
 
 ### Batch Inference
 
 ```bash
-uv run python -m scripts.infer model=ruroberta_large
+uv run python -m scripts.evaluate model=ruroberta_large
 ```
+
+To reproduce the evaluation procedure used in the original RuIzardEmotions repository, you can enable Softmax activation::
+
+```bash
+uv run python -m scripts.evaluate model=rubert_tiny model.activation=softmax
+```
+
+Metrics obtained during batch inference are saved to the `/inference_results` directory.
 
 ### Single Text Prediction
 
-Example:
+#### Prediction using Triton Inference Server
+
+**Triton requirements:**
+
+- Docker
+- NVIDIA Container Toolkit
+- GPU
 
 ```bash
-uv run python -m scripts/predict.py model=ruroberta_large +text="Сегодня отличный день!"
+uv run python triton/prepare_model_repository.py
+```
+
+Launch Triton Inference Server:
+
+```bash
+cd triton
+docker compose up
+```
+
+Run inference:
+
+```bash
+uv run python -m scripts.triton_infer \
+    model=rubert_tiny2 \
+    '+text="привет"'
+```
+
+#### Prediction without Triton Inference Server
+
+```bash
+uv run python -m scripts.predict model=ruroberta_large +text="Сегодня отличный день!"
 ```
 
 ## Results
 
+Two evaluation procedures are reported:
+
+- `torch` — metrics computed directly with PyTorch/TorchMetrics
+- `authors` — metrics computed using the official evaluation script from the original repository of the dataset's authors
+
+The authors report different training settings and evaluation results in the original repository code and in the published README / Hugging Face model card.
+For this reason, two `ruBERT-tiny2` models were fine-tuned with two sets of hyperparameters.
+
 ### Results with SoftMax activation
 
-| Metric             | ruBERT-tiny2 (authors' code) | ruBERT-tiny2 (authors' description) | ruBERT-base | ruBERT-cased-conv | ruRoBERTa-large |
-| ------------------ | ---------------------------- | ----------------------------------- | ----------- | ----------------- | --------------- |
-| F1-macro (torch)   | 0.3343                       | 0.3408                              | 0.3991      | 0.3984            | **0.4103**      |
-| F1-micro (torch)   | 0.4464                       | 0.4518                              | 0.4931      | 0.4876            | **0.5022**      |
-| F1-macro (authors) | 0.6254                       | 0.6277                              | 0.6578      | 0.6570            | **0.6643**      |
-| F1-micro (authors) | 0.8628                       | 0.8606                              | 0.8651      | 0.8638            | **0.8682**      |
-| Precision          | 0.4867                       | 0.4683                              | 0.6254      | 0.6741            | **0.7110**      |
-| Recall             | 0.2607                       | 0.2725                              | 0.3178      | 0.3188            | **0.3288**      |
+| Metric             | ruBERT-tiny2 (authors' code) | ruBERT-tiny2 (reported by authors) | ruBERT-base | ruBERT-cased-conv | ruRoBERTa-large |
+| ------------------ | ---------------------------- | ---------------------------------- | ----------- | ----------------- | --------------- |
+| F1-macro (torch)   | 0.3343                       | 0.3408                             | 0.3991      | 0.3984            | **0.4103**      |
+| F1-micro (torch)   | 0.4464                       | 0.4518                             | 0.4931      | 0.4876            | **0.5022**      |
+| F1-macro (authors) | 0.6254                       | 0.6277                             | 0.6578      | 0.6570            | **0.6643**      |
+| F1-micro (authors) | 0.8628                       | 0.8606                             | 0.8651      | 0.8638            | **0.8682**      |
+| Precision          | 0.4867                       | 0.4683                             | 0.6254      | 0.6741            | **0.7110**      |
+| Recall             | 0.2607                       | 0.2725                             | 0.3178      | 0.3188            | **0.3288**      |
 
 ### Results with Sigmoid activation
 
-| Metric             | ruBERT-tiny2 (authors' code) | ruBERT-tiny2 (authors' description) | ruBERT-base | ruBERT-cased-conv | ruRoBERTa-large |
-| ------------------ | ---------------------------- | ----------------------------------- | ----------- | ----------------- | --------------- |
-| F1-macro (torch)   | 0.4590                       | 0.4708                              | 0.5150      | 0.5087            | **0.5180**      |
-| F1-micro (torch)   | 0.5381                       | 0.5416                              | 0.5707      | 0.5624            | **0.5732**      |
-| F1-macro (authors) | 0.6862                       | 0.6889                              | 0.7071      | 0.7036            | **0.7134**      |
-| F1-micro (authors) | **0.8641**                   | 0.8564                              | 0.8510      | 0.8489            | 0.8619          |
-| Precision          | 0.5686                       | 0.5193                              | 0.5365      | 0.5295            | **0.5784**      |
-| Recall             | 0.4024                       | 0.4383                              | **0.5108**  | 0.5060            | 0.4847          |
+| Metric             | ruBERT-tiny2 (authors' code) | ruBERT-tiny2 (reported by authors) | ruBERT-base | ruBERT-cased-conv | ruRoBERTa-large |
+| ------------------ | ---------------------------- | ---------------------------------- | ----------- | ----------------- | --------------- |
+| F1-macro (torch)   | 0.4590                       | 0.4708                             | 0.5150      | 0.5087            | **0.5180**      |
+| F1-micro (torch)   | 0.5381                       | 0.5416                             | 0.5707      | 0.5624            | **0.5732**      |
+| F1-macro (authors) | 0.6862                       | 0.6889                             | 0.7071      | 0.7036            | **0.7134**      |
+| F1-micro (authors) | **0.8641**                   | 0.8564                             | 0.8510      | 0.8489            | 0.8619          |
+| Precision          | 0.5686                       | 0.5193                             | 0.5365      | 0.5295            | **0.5784**      |
+| Recall             | 0.4024                       | 0.4383                             | **0.5108**  | 0.5060            | 0.4847          |
