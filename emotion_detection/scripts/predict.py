@@ -32,7 +32,7 @@ def main(cfg: DictConfig):
     cfg_labels = OmegaConf.load(labels_path.resolve())
     labels = cfg_labels.labels
 
-    model_path = Path(cfg.paths.save_dir) / cfg.model.model_name.replace("/", "_")
+    model_path = Path(cfg.paths.save_dir) / cfg.model.model_name.replace("/", "-")
     tokenizer, model = load_model(model_path)
 
     emotions = predict_emotion(text, tokenizer, model, labels)

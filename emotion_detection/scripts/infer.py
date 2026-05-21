@@ -133,7 +133,7 @@ def main(cfg: DictConfig):
 
     results_dir = (
         Path(cfg.paths.inference_dir)
-        / cfg.model.model_name.replace("/", "_")
+        / cfg.model.model_name.replace("/", "-")
         / inference_timestamp
     )
 
