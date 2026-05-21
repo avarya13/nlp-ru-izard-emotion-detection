@@ -2,6 +2,7 @@ save_dir: ./models
 checkpoint_dir: ${paths.save_dir}/checkpoints
 inference_dir: ./inference_results
 onnx_dir: onnx_models
+tensorrt_engine: null
 logs_dir: ./logs
 mlflow_dir: ${hydra:runtime.cwd}/mlflow
 mlflow_uri: "http://127.0.0.1:8080"
