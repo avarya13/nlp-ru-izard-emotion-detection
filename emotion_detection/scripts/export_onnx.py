@@ -9,7 +9,7 @@ from transformers import AutoModelForSequenceClassification
 
 @hydra.main(version_base="1.3", config_path="../../configs", config_name="config")
 def main(cfg: DictConfig):
-    base_model_dir = Path(cfg.paths.save_dir) / cfg.model.model_name.replace("/", "_")
+    base_model_dir = Path(cfg.paths.save_dir) / cfg.model.model_name.replace("/", "-")
 
     timestamp = cfg.paths.timestamp
 
@@ -42,7 +42,7 @@ def main(cfg: DictConfig):
 
     model.eval()
 
-    output_dir = Path(cfg.paths.onnx_dir) / cfg.model.model_name.replace("/", "_")
+    output_dir = Path(cfg.paths.onnx_dir) / cfg.model.model_name.replace("/", "-")
 
     export_timestamp = datetime.now().strftime("%Y%m%d-%H%M")
 
@@ -85,7 +85,10 @@ def main(cfg: DictConfig):
             },
         },
         opset_version=14,
-        do_constant_folding=True,
+        do_constant_folding=False,
+        export_params=True,
+        keep_initializers_as_inputs=False,
+        external_data=False,
     )
 
     print(f"ONNX model saved to: {onnx_path}")
