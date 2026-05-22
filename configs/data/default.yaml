@@ -1,4 +1,7 @@
-data_dir: ./data/ru-izard-emotions
+data_dir: ../data/ru-izard-emotions
+data_url: "Djacon/ru-izard-emotions"
+remote_name: "ruizard-emotions-data"
+
 num_labels: 10
 batch_size: 32
 max_length: 128

@@ -5,7 +5,7 @@ from pathlib import Path
 import hydra
 import torch
 from omegaconf import DictConfig
-from src.data.emotion_datamodule import EmotionDataModule
+from src.datamodule.emotion_datamodule import EmotionDataModule
 from src.utils.dvc_pull import dvc_pull
 from src.utils.metrics import compute_f1_macro, compute_f1_micro
 from torchmetrics import F1Score, Precision, Recall

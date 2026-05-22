@@ -5,16 +5,16 @@ from pathlib import Path
 
 import hydra
 import lightning as L
+import mlflow.pytorch
+from datamodule.emotion_datamodule import EmotionDataModule
 from lightning.pytorch.callbacks import LearningRateMonitor, ModelCheckpoint
 from lightning.pytorch.loggers import CSVLogger
 from omegaconf import DictConfig
-from src.data.emotion_datamodule import EmotionDataModule
-from src.models.multilabel_classifier import MultiLabelClassifier
-from src.utils.dvc_pull import dvc_pull
-from src.utils.plot_metrics import save_all_plots
 from transformers import AutoTokenizer
+from utils.dvc_pull import dvc_pull
+from utils.plot_metrics import save_all_plots
 
-import mlflow.pytorch
+from emotion_detection.train.multilabel_classifier import MultiLabelClassifier
 
 
 @hydra.main(version_base="1.3", config_path="../../configs", config_name="config")
