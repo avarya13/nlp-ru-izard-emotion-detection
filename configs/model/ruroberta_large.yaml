@@ -9,6 +9,6 @@ focal_gamma: 2.0
 pos_weight: null
 warmup_steps: null
 warmup_ratio: 0.15
-scheduler_steps: null
+scheduler_steps: -1
 scheduler_type: "linear_warmup"
 activation: sigmoid

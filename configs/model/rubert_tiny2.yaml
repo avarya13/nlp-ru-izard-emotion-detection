@@ -1,6 +1,6 @@
 model_name: cointegrated/rubert-tiny2
 triton_name: cointegrated-rubert-tiny2
-epochs: 10
+epochs: 2
 num_labels: 10
 learning_rate: 5e-5
 weight_decay: 0.01

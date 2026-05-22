@@ -1,3 +1,3 @@
 hydra:
   run:
-    dir: ./emotion_detection/outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
+    dir: ./emotion_detection/hydra_outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}

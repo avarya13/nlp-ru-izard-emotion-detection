@@ -1,3 +1,4 @@
+dvc_target: ../data/ru-izard-emotions.dvc
 data_dir: ../data/ru-izard-emotions
 data_url: "Djacon/ru-izard-emotions"
 remote_name: "ruizard-emotions-data"
