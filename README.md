@@ -116,30 +116,12 @@ uv run mlflow server --host 127.0.0.1 --port 8080 --backend-store-uri file:./mlf
 #### Train Model
 
 ```bash
-uv run python -m scripts.train model=ruroberta_large
+uv run python commands.py train model=ruroberta_large
 ```
 
 During training, hyperparameters, losses, and evaluation metrics are logged to the `/logs` directory. At the end of training, loss and metric graphs are plotted and saved to the `/plots` directory. The `/logs` and `/plots` directories are created automatically during training.
 
-## Model export
-
-### Export to ONNX
-
-```bash
-uv run python -m scripts.export_onnx model=rubert_tiny2
-```
-
-### Export to TensorRT
-
-```bash
-scripts/export_tensorrt.sh \
-  onnx_models/model_name/model.onnx \
-  tensorrt_models/model_name/model.engine
-```
-
-## Inference
-
-### Batch Inference
+## Model evaluation
 
 ```bash
 uv run python -m scripts.evaluate model=ruroberta_large
@@ -153,6 +135,22 @@ uv run python -m scripts.evaluate model=rubert_tiny model.activation=softmax
 
 Metrics obtained during batch inference are saved to the `/inference_results` directory.
 
+## Model export
+
+### Export to ONNX
+
+```bash
+uv run python commands.py export onnx model=rubert_tiny2
+```
+
+### Export to TensorRT
+
+```bash
+uv run python commands.py export trt model=rubert_tiny2
+```
+
+## Inference
+
 ### Single Text Prediction
 
 #### Prediction using Triton Inference Server
@@ -164,20 +162,19 @@ Metrics obtained during batch inference are saved to the `/inference_results` di
 - GPU
 
 ```bash
-uv run python triton/prepare_model_repository.py
+uv run python commands.py prepare-triton
 ```
 
 Launch Triton Inference Server:
 
 ```bash
-cd triton
-docker compose up
+docker compose -f triton_server/docker-compose.yml up
 ```
 
 Run inference:
 
 ```bash
-uv run python -m scripts.triton_infer model=rubert_tiny2 '+text="Сегодня отличный день!"'
+uv run python commands.py infer triton model=rubert_tiny2 '+text="Сегодня отличный день!"'
 ```
 
 #### Prediction without Triton Inference Server
