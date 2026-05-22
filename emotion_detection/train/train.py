@@ -3,28 +3,26 @@ import subprocess
 from datetime import datetime
 from pathlib import Path
 
-import hydra
 import lightning as L
-import mlflow.pytorch
-from datamodule.emotion_datamodule import EmotionDataModule
+from eval.plot_metrics import save_all_plots
 from lightning.pytorch.callbacks import LearningRateMonitor, ModelCheckpoint
 from lightning.pytorch.loggers import CSVLogger
 from omegaconf import DictConfig
 from transformers import AutoTokenizer
 from utils.dvc_pull import dvc_pull
-from utils.plot_metrics import save_all_plots
 
-from emotion_detection.train.multilabel_classifier import MultiLabelClassifier
+import mlflow.pytorch
+from data.emotion_datamodule import EmotionDataModule
+
+from .multilabel_classifier import MultiLabelClassifier
 
 
-@hydra.main(version_base="1.3", config_path="../../configs", config_name="config")
-def main(cfg: DictConfig):
+def run_train(cfg: DictConfig):
     L.seed_everything(cfg.seed)
     timestamp = datetime.now().strftime("%Y%m%d-%H%M")
 
-    dvc_pull()
+    dvc_pull(remote=cfg.data.remote_name, target=cfg.data.dvc_target)
 
-    # DataModule
     dm = EmotionDataModule(
         data_dir=cfg.data.data_dir,
         model_name=cfg.model.model_name,
@@ -33,14 +31,14 @@ def main(cfg: DictConfig):
     )
 
     logger = L.pytorch.loggers.MLFlowLogger(
-        experiment_name="emotion_classification",
+        experiment_name="emotion_detection",
         tracking_uri=cfg.paths.mlflow_uri,
         tags={
             "project": f"ru_izard_{cfg.model.model_name}",
             "user": os.getenv("USER", "unknown"),
         },
     )
-    csv_logger = CSVLogger(save_dir="logs", name="csv_logs")
+    csv_logger = CSVLogger(save_dir="logs", name="train_logs")
 
     commit_id = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode().strip()
 
@@ -54,8 +52,8 @@ def main(cfg: DictConfig):
         }
     )
 
-    # Model
-    model_params = {k: v for k, v in cfg.model.items() if k != "epochs"}
+    exclude_keys = {"epochs", "triton_name", "activation", "triton_url"}
+    model_params = {k: v for k, v in cfg.model.items() if k not in exclude_keys}
     model = MultiLabelClassifier(**model_params)
 
     lr_monitor = LearningRateMonitor(logging_interval="step")
@@ -82,9 +80,8 @@ def main(cfg: DictConfig):
     if csv_path.exists():
         save_all_plots(csv_path, Path("plots"), cfg.model.model_name, timestamp)
 
-    # Saving model and tokenizer in transformers format
     save_path = (
-        f"{cfg.paths.save_dir}/{cfg.model.model_name.replace('/', '_')}/{timestamp}"
+        f"{cfg.paths.save_dir}/{cfg.model.model_name.replace('/', '-')}/{timestamp}"
     )
     model.model.save_pretrained(save_path)
 
@@ -94,5 +91,8 @@ def main(cfg: DictConfig):
 
 
 if __name__ == "__main__":
+    from utils.hydra_utils import compose_cfg
+
+    cfg = compose_cfg("config")
     mlflow.pytorch.autolog(log_every_n_epoch=1, log_models=False)
-    main()
+    run_train(cfg)
