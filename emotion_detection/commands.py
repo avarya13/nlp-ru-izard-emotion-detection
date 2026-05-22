@@ -3,6 +3,7 @@ from pathlib import Path
 
 import fire
 from omegaconf import OmegaConf
+from triton_server.build_triton_repo import build_repo
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -12,6 +13,15 @@ def load_data_cfg():
     return OmegaConf.load(cfg_path)
 
 
+def _run_command(module_name: str, func_name: str, overrides: list):
+    from utils.hydra_utils import compose_cfg
+
+    cfg = compose_cfg("config", overrides)
+    module = __import__(module_name, fromlist=[func_name])
+    func = getattr(module, func_name)
+    return func(cfg)
+
+
 def download(*args, **kwargs):
     cfg = load_data_cfg()
     from data.download_data import download_data
@@ -19,48 +29,41 @@ def download(*args, **kwargs):
     return download_data(cfg)
 
 
-def train(*args, **kwargs):
-    from train.train import main as train_main
-
-    return train_main()
+def train(*overrides: str):
+    return _run_command("train.train", "run_train", list(overrides))
 
 
-def evaluate(*args, **kwargs):
-    from eval.evaluate import main as eval_main
-
-    return eval_main()
+def eval(*overrides: str):
+    return _run_command("eval.evaluate", "run_eval", list(overrides))
 
 
-def export_onnx(*args, **kwargs):
-    from export.export_onnx import main as onnx_main
-
-    return onnx_main()
+def export_onnx(*overrides: str):
+    return _run_command("export.export_onnx", "export_onnx", list(overrides))
 
 
-def export_tensorrt(*args, **kwargs):
+def export_trt(*overrides: str):
     import subprocess
     from pathlib import Path
 
+    from utils.hydra_utils import compose_cfg
+    from utils.model_paths import get_engine_path, get_onnx_model_path
+
+    cfg = compose_cfg("config", list(overrides))
+    onnx_base = Path(cfg.paths.onnx_dir)
+    model_name = cfg.model.model_name
+    timestamp = getattr(cfg.paths, "timestamp", None)
+
+    onnx_path, _ = get_onnx_model_path(onnx_base, model_name, timestamp)
+    trt_base = Path(str(onnx_base).replace("onnx_models", "tensorrt_models"))
+    engine_path = get_engine_path(onnx_path, trt_base)
+
     script_path = Path(__file__).parent / "export" / "export_tensorrt.sh"
-    return subprocess.run([str(script_path), *args], check=True)
+    subprocess.run([str(script_path), str(onnx_path), str(engine_path)], check=True)
+    print(f"TensorRT engine saved to {engine_path}")
 
 
-def predict(*args, **kwargs):
-    from infer.predict import main as predict_main
-
-    return predict_main()
-
-
-def predict_tensorrt(*args, **kwargs):
-    from infer.predict_tensorrt import main as trt_main
-
-    return trt_main()
-
-
-def triton(*args, **kwargs):
-    from infer.triton_infer import main as triton_main
-
-    return triton_main()
+def triton(*overrides: str):
+    return _run_command("infer.triton_infer", "run_triton_infer", list(overrides))
 
 
 def triton_client(*args, **kwargs):
@@ -69,21 +72,27 @@ def triton_client(*args, **kwargs):
     return client_main()
 
 
+def prepare_triton(*overrides: str):
+    from utils.hydra_utils import compose_cfg
+
+    cfg = compose_cfg("config", list(overrides))
+    build_repo(cfg)
+
+
 if __name__ == "__main__":
     fire.Fire(
         {
             "download": download,
             "train": train,
-            "eval": evaluate,
+            "eval": eval,
             "export": {
                 "onnx": export_onnx,
-                "tensorrt": export_tensorrt,
+                "trt": export_trt,
             },
-            "predict": {
-                "local": predict,
-                "tensorrt": predict_tensorrt,
+            "infer": {
                 "triton": triton,
             },
             "triton-client": triton_client,
+            "prepare-triton": prepare_triton,
         }
     )
