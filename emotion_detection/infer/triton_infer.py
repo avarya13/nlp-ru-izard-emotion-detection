@@ -2,11 +2,11 @@ import json
 from datetime import datetime
 from pathlib import Path
 
-import hydra
 import numpy as np
 from omegaconf import DictConfig, OmegaConf
-from scripts.triton_client import TritonClient
 from transformers import AutoTokenizer
+
+from .triton_client import TritonClient
 
 
 class TritonNLPInfer:
@@ -73,12 +73,12 @@ def apply_activation(
         raise ValueError(f"Unsupported activation: {activation}")
 
 
-@hydra.main(
-    version_base="1.3",
-    config_path="../../configs",
-    config_name="config",
-)
-def main(cfg: DictConfig):
+# @hydra.main(
+#     version_base="1.3",
+#     config_path="../../configs",
+#     config_name="config",
+# )
+def run_triton_infer(cfg: DictConfig):
     if not hasattr(cfg, "text") or cfg.text is None:
         raise ValueError("Please provide text via +text='Your text here'")
 
@@ -166,4 +166,4 @@ def main(cfg: DictConfig):
 
 
 if __name__ == "__main__":
-    main()
+    run_triton_infer()
