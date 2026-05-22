@@ -1,6 +1,8 @@
 save_dir: ./models
 checkpoint_dir: ${paths.save_dir}/checkpoints
 inference_dir: ./inference_results
+save_json: true
+triton_infer_dir: ./triton_infer_results
 onnx_dir: onnx_models
 tensorrt_engine: null
 logs_dir: ./logs
