@@ -176,9 +176,7 @@ docker compose up
 Run inference:
 
 ```bash
-uv run python -m scripts.triton_infer \
-    model=rubert_tiny2 \
-    '+text="привет"'
+uv run python -m scripts.triton_infer model=rubert_tiny2 '+text="Сегодня отличный день!"'
 ```
 
 #### Prediction without Triton Inference Server
