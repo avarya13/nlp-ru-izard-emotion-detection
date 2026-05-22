@@ -1,8 +1,9 @@
 from dvc.repo import Repo
 
 
-def dvc_pull(remote="ruizard-emotions-data", target="data/ru-izard-emotions.dvc"):
-    """Pull data or model from DVC remote"""
+def dvc_pull(remote: str = None, target: str = None) -> None:
+    if target is None:
+        raise ValueError("Target must be specified")
     try:
         with Repo() as repo:
             repo.pull(targets=[target], remote=remote)
