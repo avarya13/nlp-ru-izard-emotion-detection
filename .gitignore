@@ -1,3 +1,4 @@
+emotion_detection/triton_infer_results/
 emotion_detection/inference_results/
 emotion_detection/tensorrt_models/
 emotion_detection/onnx_models/
