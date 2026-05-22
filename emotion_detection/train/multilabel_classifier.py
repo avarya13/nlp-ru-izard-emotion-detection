@@ -4,13 +4,14 @@ import lightning as L
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from src.utils.focal_loss import FocalLoss
-from src.utils.metrics import compute_f1_macro, compute_f1_micro
+from eval.metrics import compute_f1_macro, compute_f1_micro
 from torchmetrics import F1Score, Precision, Recall
 from transformers import (
     AutoModelForSequenceClassification,
     get_linear_schedule_with_warmup,
 )
+
+from .focal_loss import FocalLoss
 
 
 class MultiLabelClassifier(L.LightningModule):

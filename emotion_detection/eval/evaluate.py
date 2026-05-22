@@ -2,19 +2,19 @@ import json
 from datetime import datetime
 from pathlib import Path
 
-import hydra
 import torch
 from omegaconf import DictConfig
-from src.datamodule.emotion_datamodule import EmotionDataModule
-from src.utils.dvc_pull import dvc_pull
-from src.utils.metrics import compute_f1_macro, compute_f1_micro
 from torchmetrics import F1Score, Precision, Recall
 from transformers import AutoModelForSequenceClassification
+from utils.dvc_pull import dvc_pull
+
+from data.emotion_datamodule import EmotionDataModule
+
+from .metrics import compute_f1_macro, compute_f1_micro
 
 
-@hydra.main(version_base="1.3", config_path="../../configs", config_name="config")
-def main(cfg: DictConfig):
-    dvc_pull()
+def run_eval(cfg: DictConfig):
+    dvc_pull(remote=cfg.data.remote_name, target=cfg.data.dvc_target)
 
     dm = EmotionDataModule(
         data_dir=cfg.data.data_dir,
@@ -159,4 +159,4 @@ def main(cfg: DictConfig):
 
 
 if __name__ == "__main__":
-    main()
+    run_eval()
