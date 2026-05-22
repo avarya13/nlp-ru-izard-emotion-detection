@@ -89,10 +89,11 @@ uv run dvc pull
 If necessary, you can download the dataset directly from Hugging Face:
 
 ```bash
-uv run python scripts/download_data.py
+cd emotion_detection
+uv run python commands.py download
 ```
 
-The dataset will be stored in the `emotion_detection/data` directory.
+The dataset will be stored in the `/data` directory.
 
 ### Experiment Tracking
 
