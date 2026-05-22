@@ -1,14 +1,13 @@
 from datetime import datetime
 from pathlib import Path
 
-import hydra
 import torch
 from omegaconf import DictConfig
 from transformers import AutoModelForSequenceClassification
 
 
-@hydra.main(version_base="1.3", config_path="../../configs", config_name="config")
-def main(cfg: DictConfig):
+# @hydra.main(version_base="1.3", config_path="../../configs", config_name="config")
+def export_onnx(cfg: DictConfig):
     base_model_dir = Path(cfg.paths.save_dir) / cfg.model.model_name.replace("/", "-")
 
     timestamp = cfg.paths.timestamp
@@ -95,4 +94,4 @@ def main(cfg: DictConfig):
 
 
 if __name__ == "__main__":
-    main()
+    export_onnx()
