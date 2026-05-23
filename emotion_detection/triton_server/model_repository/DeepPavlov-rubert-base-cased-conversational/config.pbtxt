@@ -1,5 +1,5 @@
 
-name: "cointegrated-rubert-tiny2"
+name: "DeepPavlov-rubert-base-cased-conversational"
 platform: "onnxruntime_onnx"
 max_batch_size: 0
 input [

@@ -1,5 +1,5 @@
 
-name: "cointegrated-rubert-tiny2"
+name: "cointegrated-rubert-tiny2-ruizard"
 platform: "onnxruntime_onnx"
 max_batch_size: 0
 input [

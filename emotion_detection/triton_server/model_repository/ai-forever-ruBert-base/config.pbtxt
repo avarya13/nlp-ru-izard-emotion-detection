@@ -1,5 +1,5 @@
 
-name: "cointegrated-rubert-tiny2"
+name: "ai-forever-ruBert-base"
 platform: "onnxruntime_onnx"
 max_batch_size: 0
 input [
