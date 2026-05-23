@@ -86,6 +86,8 @@ To download data and models:
 uv run dvc pull
 ```
 
+The data will be stored in the `data` directory and the models will be in the `emotion_detection/models`, `emotion_detection/onnx_models` and `emotion_detection/tensorrt_models` directories.
+
 If necessary, you can download the dataset directly from Hugging Face:
 
 ```bash
