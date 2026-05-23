@@ -79,8 +79,8 @@ uv run pre-commit run -a
 
 ### Data Download
 
-Dataset is managed using DVC.
-To download data:
+Dataset and fine-tuned models is managed using DVC.
+To download data and models:
 
 ```bash
 uv run dvc pull
@@ -116,6 +116,7 @@ uv run mlflow server --host 127.0.0.1 --port 8080 --backend-store-uri file:./mlf
 #### Train Model
 
 ```bash
+cd emotion_detection
 uv run python commands.py train model=ruroberta_large
 ```
 
