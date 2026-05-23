@@ -1,0 +1,6 @@
+outs:
+- md5: b491790b3a198740a75ce62e1db3b0e4.dir
+  size: 713999100
+  nfiles: 1
+  hash: md5
+  path: ai-forever-ruBert-base

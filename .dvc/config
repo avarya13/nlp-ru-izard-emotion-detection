@@ -1,4 +1,6 @@
 [core]
-    remote = ruizard-emotions-data
+    remote = models-remote
 ['remote "ruizard-emotions-data"']
     url = /mnt/data/mipt/mlops-ru-izard-emotion-detection/dvc_data
+['remote "models-remote"']
+    url = /mnt/data/mipt/mlops-ru-izard-emotion-detection/dvc_models

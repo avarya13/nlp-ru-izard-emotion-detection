@@ -1,0 +1,6 @@
+outs:
+- md5: 164fd8c78210fa1c6a803a68b42c9a08.dir
+  size: 714479910
+  nfiles: 4
+  hash: md5
+  path: DeepPavlov-rubert-base-cased-conversational

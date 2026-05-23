@@ -1,0 +1,6 @@
+outs:
+- md5: f5defec729c25b247e42260caa43b3e9.dir
+  size: 1422677220
+  nfiles: 1
+  hash: md5
+  path: ai-forever-ruRoberta-large

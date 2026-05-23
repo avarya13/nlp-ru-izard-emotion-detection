@@ -1,0 +1,6 @@
+outs:
+- md5: d9b117f39df10c7450441ad6e19bd6e9.dir
+  size: 116851501
+  nfiles: 1
+  hash: md5
+  path: cointegrated-rubert-tiny2

@@ -1,0 +1,6 @@
+outs:
+- md5: e1071a82d763d300e2d9e361836d21fa.dir
+  size: 119209690
+  nfiles: 4
+  hash: md5
+  path: cointegrated-rubert-tiny2-ruizard
