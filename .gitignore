@@ -11,6 +11,7 @@ emotion_detection/plots/
 emotion_detection/logs/
 node_modules/
 dvc_data/
+dvc_models/
 outputs/
 mlflow/
 *.onnx
