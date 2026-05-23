@@ -1,6 +1,5 @@
-model_name: rubert-base
-hf_name: ai-forever/ruBert-base
-triton_name: ai-forever-rubert-base
+model_name: ai-forever/ruBert-base
+triton_name: ai-forever-ruBert-base
 epochs: 8
 num_labels: 10
 learning_rate: 2e-5
