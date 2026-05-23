@@ -26,27 +26,26 @@ def prepare_model(
     config_template = """
         name: "{model_name}"
         platform: "onnxruntime_onnx"
-        max_batch_size: 8
+        max_batch_size: 0
         input [
         {{
             name: "input_ids"
             data_type: TYPE_INT64
-            dims: [ -1 ]
+            dims: [ 1, -1 ]
         }},
         {{
             name: "attention_mask"
             data_type: TYPE_INT64
-            dims: [ -1 ]
+            dims: [ 1, -1 ]
         }}
         ]
         output [
         {{
             name: "logits"
             data_type: TYPE_FP32
-            dims: [ {num_labels} ]
+            dims: [ 1, {num_labels} ]
         }}
         ]
-        dynamic_batching {{ }}
     """
     config_path = triton_model_dir / "config.pbtxt"
     config_path.write_text(
