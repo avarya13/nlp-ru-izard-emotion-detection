@@ -62,8 +62,12 @@ def export_trt(*overrides: str):
     print(f"TensorRT engine saved to {engine_path}")
 
 
-def triton(*overrides: str):
+def infer_triton(*overrides: str):
     return _run_command("infer.infer_triton", "run_triton_infer", list(overrides))
+
+
+def infer_ckpt(*overrides: str):
+    return _run_command("infer.infer", "run_infer", list(overrides))
 
 
 def triton_client(*args, **kwargs):
@@ -90,7 +94,8 @@ if __name__ == "__main__":
                 "trt": export_trt,
             },
             "infer": {
-                "triton": triton,
+                "ckpt": infer_ckpt,
+                "triton": infer_triton,
             },
             "triton-client": triton_client,
             "prepare-triton": prepare_triton,

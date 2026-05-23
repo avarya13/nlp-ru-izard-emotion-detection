@@ -1,6 +1,5 @@
 from pathlib import Path
 
-import hydra
 import torch
 from omegaconf import DictConfig, OmegaConf
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
@@ -21,8 +20,7 @@ def predict_emotion(text: str, tokenizer, model, labels):
     return {labels[i]: probs[i].item() for i in range(len(labels))}
 
 
-@hydra.main(version_base="1.3", config_path="../../configs", config_name="config")
-def main(cfg: DictConfig):
+def run_infer(cfg: DictConfig):
     if not hasattr(cfg, "text") or cfg.text is None:
         raise ValueError("Please provide text via +text='Your text here'")
     text = cfg.text
@@ -32,9 +30,26 @@ def main(cfg: DictConfig):
     cfg_labels = OmegaConf.load(labels_path.resolve())
     labels = cfg_labels.labels
 
-    model_path = Path(cfg.paths.save_dir) / cfg.model.model_name.replace("/", "-")
-    tokenizer, model = load_model(model_path)
+    base_model_dir = Path(cfg.paths.save_dir) / cfg.model.model_name.replace("/", "-")
+    if hasattr(cfg.paths, "timestamp") and cfg.paths.timestamp:
+        model_dir = base_model_dir / cfg.paths.timestamp
+    else:
+        if base_model_dir.exists():
+            subdirs = [
+                d
+                for d in base_model_dir.iterdir()
+                if d.is_dir() and len(d.name) == 13 and d.name[8] == "-"
+            ]
+            if not subdirs:
+                raise ValueError(
+                    f"No timestamped model directories found in {base_model_dir}"
+                )
+            latest = max(subdirs, key=lambda d: d.name)
+            model_dir = latest
+        else:
+            raise ValueError(f"Model directory does not exist: {base_model_dir}")
 
+    tokenizer, model = load_model(model_dir)
     emotions = predict_emotion(text, tokenizer, model, labels)
 
     for label, prob in sorted(emotions.items(), key=lambda x: -x[1]):
@@ -42,4 +57,4 @@ def main(cfg: DictConfig):
 
 
 if __name__ == "__main__":
-    main()
+    run_infer()
