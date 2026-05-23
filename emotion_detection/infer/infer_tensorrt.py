@@ -2,6 +2,7 @@ from pathlib import Path
 
 import hydra
 import numpy as np
+import pycuda.autoinit
 import pycuda.driver as cuda
 import tensorrt as trt
 from omegaconf import DictConfig, OmegaConf
@@ -72,4 +73,5 @@ def main(cfg: DictConfig):
 
 
 if __name__ == "__main__":
+    _ = pycuda.autoinit
     main()

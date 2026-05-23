@@ -180,7 +180,13 @@ uv run python commands.py infer triton model=rubert_tiny2 '+text="Сегодня
 #### Prediction without Triton Inference Server
 
 ```bash
-uv run python -m scripts.predict model=ruroberta_large +text="Сегодня отличный день!"
+uv run python commands.py infer ckpt model=rubert_tiny2 '+text="Сегодня отличный день!"'
+```
+
+#### TensorRT Inference
+
+```bash
+infer/run_tensorrt_infer.sh "Сегодня отличный день!" /path/to/model.engine
 ```
 
 ## Results
