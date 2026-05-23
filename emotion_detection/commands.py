@@ -63,7 +63,7 @@ def export_trt(*overrides: str):
 
 
 def triton(*overrides: str):
-    return _run_command("infer.triton_infer", "run_triton_infer", list(overrides))
+    return _run_command("infer.infer_triton", "run_triton_infer", list(overrides))
 
 
 def triton_client(*args, **kwargs):

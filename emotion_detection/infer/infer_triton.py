@@ -73,11 +73,6 @@ def apply_activation(
         raise ValueError(f"Unsupported activation: {activation}")
 
 
-# @hydra.main(
-#     version_base="1.3",
-#     config_path="../../configs",
-#     config_name="config",
-# )
 def run_triton_infer(cfg: DictConfig):
     if not hasattr(cfg, "text") or cfg.text is None:
         raise ValueError("Please provide text via +text='Your text here'")
