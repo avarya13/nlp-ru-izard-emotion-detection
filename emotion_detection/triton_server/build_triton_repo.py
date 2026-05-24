@@ -33,18 +33,18 @@ def prepare_model(
     config_template = """
 name: "{model_name}"
 platform: "tensorrt_plan"
-max_batch_size: 0
+max_batch_size: 1
 
 input [
   {{
     name: "input_ids"
     data_type: TYPE_INT64
-    dims: [ 1, -1 ]
+    dims: [ 128 ]
   }},
   {{
     name: "attention_mask"
     data_type: TYPE_INT64
-    dims: [ 1, -1 ]
+    dims: [ 128 ]
   }}
 ]
 
@@ -52,7 +52,7 @@ output [
   {{
     name: "logits"
     data_type: TYPE_FP32
-    dims: [ 1, {num_labels} ]
+    dims: [ {num_labels} ]
   }}
 ]
 """
