@@ -21,6 +21,8 @@ def save_all_plots(
         ("train_recall_macro", "val_recall_macro"),
         ("custom_train_f1_macro", "custom_val_f1_macro"),
         ("custom_train_f1_micro", "custom_val_f1_micro"),
+        ("train_auc", "val_auc"),
+        ("train_rank_loss", "val_rank_loss"),
     ]
 
     for train_metric, val_metric in metrics:
@@ -39,7 +41,8 @@ def save_all_plots(
             if not val_data.empty:
                 plt.plot(val_data["epoch"], val_data[val_metric], label=val_metric)
             plt.xlabel("Epoch")
-            plt.ylabel("Value")
+            ylabel = "Lower is better" if "rank_loss" in train_metric else "Value"
+            plt.ylabel(ylabel)
             plt.xlim(0)
             plt.title(f"{train_metric} / {val_metric}")
             plt.legend()

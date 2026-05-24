@@ -6,6 +6,7 @@ import torch.nn as nn
 import torch.optim as optim
 from eval.metrics import compute_f1_macro, compute_f1_micro
 from torchmetrics import F1Score, Precision, Recall
+from torchmetrics.classification import MultilabelAUROC, MultilabelRankingLoss
 from transformers import (
     AutoModelForSequenceClassification,
     get_linear_schedule_with_warmup,
@@ -58,6 +59,10 @@ class MultiLabelClassifier(L.LightningModule):
             task="multilabel", num_labels=num_labels, average="macro"
         )
 
+        self.train_auc = MultilabelAUROC(num_labels=num_labels, average="macro")
+
+        self.train_rank_loss = MultilabelRankingLoss()
+
         self.val_f1_macro = F1Score(
             task="multilabel", num_labels=num_labels, average="macro"
         )
@@ -70,6 +75,10 @@ class MultiLabelClassifier(L.LightningModule):
         self.val_recall_macro = Recall(
             task="multilabel", num_labels=num_labels, average="macro"
         )
+
+        self.val_auc = MultilabelAUROC(num_labels=num_labels, average="macro")
+
+        self.val_rank_loss = MultilabelRankingLoss()
 
     def forward(self, input_ids, attention_mask):
         return self.model(input_ids=input_ids, attention_mask=attention_mask)
@@ -93,6 +102,8 @@ class MultiLabelClassifier(L.LightningModule):
         self.train_f1_micro(probs, batch["labels"].int())
         self.train_precision_macro(probs, batch["labels"].int())
         self.train_recall_macro(probs, batch["labels"].int())
+        self.train_auc(probs, batch["labels"].int())
+        self.train_rank_loss(probs, batch["labels"].int())
 
         labels_np = batch["labels"].int().cpu().detach().numpy()
         probs_np = probs.cpu().detach().numpy()
@@ -142,6 +153,8 @@ class MultiLabelClassifier(L.LightningModule):
             on_step=False,
             prog_bar=True,
         )
+        self.log("train_auc", self.train_auc, on_epoch=True, prog_bar=True)
+        self.log("train_rank_loss", self.train_rank_loss, on_epoch=True, prog_bar=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -162,6 +175,8 @@ class MultiLabelClassifier(L.LightningModule):
         self.val_f1_micro(probs, batch["labels"].int())
         self.val_precision_macro(probs, batch["labels"].int())
         self.val_recall_macro(probs, batch["labels"].int())
+        self.val_auc(probs, batch["labels"].int())
+        self.val_rank_loss(probs, batch["labels"].int())
 
         labels_np = batch["labels"].int().cpu().detach().numpy()
         probs_np = probs.cpu().detach().numpy()
@@ -211,6 +226,8 @@ class MultiLabelClassifier(L.LightningModule):
             on_step=False,
             prog_bar=True,
         )
+        self.log("val_auc", self.val_auc, on_epoch=True, prog_bar=True)
+        self.log("val_rank_loss", self.val_rank_loss, on_epoch=True, prog_bar=True)
         return loss
 
     def configure_optimizers(self):

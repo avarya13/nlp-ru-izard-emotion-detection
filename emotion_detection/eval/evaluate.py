@@ -5,6 +5,7 @@ from pathlib import Path
 import torch
 from omegaconf import DictConfig
 from torchmetrics import F1Score, Precision, Recall
+from torchmetrics.classification import MultilabelAUROC, MultilabelRankingLoss
 from transformers import AutoModelForSequenceClassification
 from utils.dvc_pull import dvc_pull
 
@@ -108,6 +109,8 @@ def run_eval(cfg: DictConfig):
         num_labels=num_labels,
         average="macro",
     )
+    auc = MultilabelAUROC(num_labels=num_labels, average="macro")
+    rank_loss = MultilabelRankingLoss()
 
     f1_macro_score = f1_macro(y_probs, y_true)
     f1_micro_score = f1_micro(y_probs, y_true)
@@ -121,6 +124,9 @@ def run_eval(cfg: DictConfig):
     custom_f1_macro = compute_f1_macro(y_true_np, y_probs_np)
     custom_f1_micro = compute_f1_micro(y_true_np, y_probs_np)
 
+    auc_score = auc(y_probs, y_true.int())
+    ranking_loss = rank_loss(y_probs, y_true.int())
+
     print(f"Macro F1-score: {f1_macro_score:.4f}")
     print(f"Micro F1-score: {f1_micro_score:.4f}")
     print(f"Macro Precision: {precision_score:.4f}")
@@ -128,6 +134,9 @@ def run_eval(cfg: DictConfig):
 
     print(f"Custom F1-macro: {custom_f1_macro:.4f}")
     print(f"Custom F1-micro: {custom_f1_micro:.4f}")
+
+    print(f"ROC-AUC: {auc_score:.4f}")
+    print(f"Ranking loss: {ranking_loss:.4f}")
 
     inference_timestamp = datetime.now().strftime("%Y%m%d-%H%M")
 
@@ -148,6 +157,8 @@ def run_eval(cfg: DictConfig):
         "macro_recall": float(recall_score),
         "custom_macro_f1": float(custom_f1_macro),
         "custom_micro_f1": float(custom_f1_micro),
+        "roc_auc": float(auc_score),
+        "ranking_loss": float(ranking_loss),
     }
 
     results_path = results_dir / "metrics.json"
