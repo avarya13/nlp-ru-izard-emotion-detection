@@ -409,6 +409,8 @@ The result of the system is a JSON object generated on the client side, which co
 | F1-micro (authors) | 0.8628                       | 0.8606                             | 0.8651      | 0.8638            | **0.8682**      |
 | Precision          | 0.4867                       | 0.4683                             | 0.6254      | 0.6741            | **0.7110**      |
 | Recall             | 0.2607                       | 0.2725                             | 0.3178      | 0.3188            | **0.3288**      |
+| ROC-AUC            | **0.8009**                   | 0.7979                             | 0.7792      | 0.7732            | 0.7815          |
+| Label Ranking Loss | **0.1357**                   | 0.1451                             | 0.1464      | 0.1536            | 0.1450          |
 
 ### Results with Sigmoid activation
 
@@ -420,9 +422,14 @@ The result of the system is a JSON object generated on the client side, which co
 | F1-micro (authors) | **0.8641**                   | 0.8564                             | 0.8510      | 0.8489            | 0.8619          |
 | Precision          | 0.5686                       | 0.5193                             | 0.5365      | 0.5295            | **0.5784**      |
 | Recall             | 0.4024                       | 0.4383                             | **0.5108**  | 0.5060            | 0.4847          |
+| ROC-AUC            | **0.8088**                   | 0.8033                             | 0.7886      | 0.7883            | 0.7869          |
+| Label Ranking Loss | **0.1357**                   | 0.1451                             | 0.1464      | 0.1536            | 0.1450          |
 
-**Note:**
-For F1-scores, two evaluation procedures are reported:
+**Notes:**
+
+1. For F1-scores, two evaluation procedures are reported:
 
 - `torch` — metrics computed directly with PyTorch/TorchMetrics
 - `authors` — metrics computed using the official evaluation script from the original repository of the dataset's authors
+
+2. For Label Ranking Loss, lower value is better.
