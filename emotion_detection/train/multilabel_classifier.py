@@ -153,8 +153,16 @@ class MultiLabelClassifier(L.LightningModule):
             on_step=False,
             prog_bar=True,
         )
-        self.log("train_auc", self.train_auc, on_epoch=True, prog_bar=True)
-        self.log("train_rank_loss", self.train_rank_loss, on_epoch=True, prog_bar=True)
+        self.log(
+            "train_auc", self.train_auc, on_epoch=True, on_step=False, prog_bar=True
+        )
+        self.log(
+            "train_rank_loss",
+            self.train_rank_loss,
+            on_epoch=True,
+            on_step=False,
+            prog_bar=True,
+        )
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -226,8 +234,14 @@ class MultiLabelClassifier(L.LightningModule):
             on_step=False,
             prog_bar=True,
         )
-        self.log("val_auc", self.val_auc, on_epoch=True, prog_bar=True)
-        self.log("val_rank_loss", self.val_rank_loss, on_epoch=True, prog_bar=True)
+        self.log("val_auc", self.val_auc, on_epoch=True, on_step=False, prog_bar=True)
+        self.log(
+            "val_rank_loss",
+            self.val_rank_loss,
+            on_epoch=True,
+            on_step=False,
+            prog_bar=True,
+        )
         return loss
 
     def configure_optimizers(self):
