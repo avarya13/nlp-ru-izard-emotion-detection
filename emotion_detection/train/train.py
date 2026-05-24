@@ -4,6 +4,7 @@ from datetime import datetime
 from pathlib import Path
 
 import lightning as L
+import mlflow.pytorch
 from eval.plot_metrics import save_all_plots
 from lightning.pytorch.callbacks import LearningRateMonitor, ModelCheckpoint
 from lightning.pytorch.loggers import CSVLogger
@@ -11,7 +12,6 @@ from omegaconf import DictConfig
 from transformers import AutoTokenizer
 from utils.dvc_pull import dvc_pull
 
-import mlflow.pytorch
 from data.emotion_datamodule import EmotionDataModule
 
 from .multilabel_classifier import MultiLabelClassifier
