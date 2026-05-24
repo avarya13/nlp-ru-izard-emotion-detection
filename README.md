@@ -1,10 +1,10 @@
 # Transformer-based multi-label emotion detection in Russian messages
 
-This project addresses multi‑label emotion recognition in Russian‑language texts.
+This project addresses multi-label emotion recognition in Russian-language texts.
 
-The **RuIzardEmotions** dataset — comprising 30,000 Reddit comments annotated with ten emotion categories — is used for training and evaluation. The baseline `ruBERT‑tiny2` model is reproduced from the [authors' repository](https://github.com/Djacon/russian-emotion-detection), and several enhancements are explored. In particular, we replace the SoftMax activation with Sigmoid at the output layer, which is more suitable for multi‑label classification.
+The **RuIzardEmotions** dataset — comprising 30,000 Reddit comments annotated with ten emotion categories — is used for training and evaluation. The baseline `ruBERT-tiny2` model is reproduced from the [authors' repository](https://github.com/Djacon/russian-emotion-detection), and several enhancements are explored. In particular, we replace the SoftMax activation with Sigmoid at the output layer, which is more suitable for multi-label classification.
 
-Three pre‑trained Russian language models — `ruBERT‑base`, `ruBERT‑base‑cased‑conversational`, and `ruRoBERTa‑large` — are fine‑tuned and compared. The best performance is achieved by `ruRoBERTa‑large`, reaching an F1‑macro score of 0.7134 and an F1‑micro score of 0.8619 (authors’ implementation).
+Three pre-trained Russian language models — `ruBERT-base`, `ruBERT-base-cased-conversational`, and `ruRoBERTa-large` — are fine-tuned and compared. The best performance is achieved by `ruRoBERTa-large`, reaching an F1-macro score of 0.7134 and an F1-micro score of 0.8619 (authors’ implementation).
 
 ## Models & Dataset
 
@@ -297,8 +297,8 @@ The complete reproducibility of the experiment is ensured by fixing a random see
 
 #### Data
 
-For prototyping, the RuIzardEmotions public dataset (2023) is used, which is a high-quality translation of the English-language corpus of go-emotions and other sources. The dataset is distributed under the Apache license‑2.0 and is available on [Hugging Face](https://huggingface.co/datasets/Djacon/ru-izard-emotions).
-The dataset contains 30,000 comments from Reddit, translated into Russian using the DeepL system with subsequent post-processing. Each comment is labeled in ten categories: _joy, sadness, anger, enthusiasm, surprise, disgust, fear, guilt, shame, neutral_. It is acceptable to have multiple emotions in one example (multi‑label).
+For prototyping, the RuIzardEmotions public dataset (2023) is used, which is a high-quality translation of the English-language corpus of go-emotions and other sources. The dataset is distributed under the Apache license-2.0 and is available on [Hugging Face](https://huggingface.co/datasets/Djacon/ru-izard-emotions).
+The dataset contains 30,000 comments from Reddit, translated into Russian using the DeepL system with subsequent post-processing. Each comment is labeled in ten categories: _joy, sadness, anger, enthusiasm, surprise, disgust, fear, guilt, shame, neutral_. It is acceptable to have multiple emotions in one example (multi-label).
 The dataset size is 4.06 MB, and the total number of rows is 24,891.
 The RuIzardEmotions dataset already contains a fixed breakdown into training, validation, and test samples in the proportions of 24,000, 3,000, and 3,000 examples, respectively.
 A key feature of the dataset is a strong class imbalance. In particular, texts corresponding to the _guilty_ and _shame_ classes make up less than 5% of all texts.
@@ -307,7 +307,7 @@ A key feature of the dataset is a strong class imbalance. In particular, texts c
 
 #### Baseline
 
-The pipeline is taken directly from the authors of the RuIzardEmotions dataset and consists of a simple sequence: including text tokenization, training, and validation. As part of this pipeline, the pre‑trained [ruBERT-tiny2](https://huggingface.co/cointegrated/rubert-tiny2) transformer model (29.4 million parameters) is configured on a target dataset to classify emotions with multiple labels. During training, the model learns from the preprocessed data, and validation is performed on the prepared test subset. According to the authors, this basic pipeline provides an F1‑macro score of 0.6180 and an F1‑micro score of 0.8642 in the test subset (author's implementations of functions).
+The pipeline is taken directly from the authors of the RuIzardEmotions dataset and consists of a simple sequence: including text tokenization, training, and validation. As part of this pipeline, the pre-trained [ruBERT-tiny2](https://huggingface.co/cointegrated/rubert-tiny2) transformer model (29.4 million parameters) is configured on a target dataset to classify emotions with multiple labels. During training, the model learns from the preprocessed data, and validation is performed on the prepared test subset. According to the authors, this basic pipeline provides an F1-macro score of 0.6180 and an F1-micro score of 0.8642 in the test subset (author's implementations of functions).
 
 #### Main model
 
