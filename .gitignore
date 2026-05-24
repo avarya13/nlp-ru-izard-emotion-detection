@@ -15,6 +15,7 @@ dvc_models/
 outputs/
 mlflow/
 *.onnx
+*.plan
 
 __pycache__/
 
