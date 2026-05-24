@@ -5,7 +5,10 @@ from pathlib import Path
 import torch
 from omegaconf import DictConfig
 from torchmetrics import F1Score, Precision, Recall
-from torchmetrics.classification import MultilabelAUROC, MultilabelRankingLoss
+from torchmetrics.classification import (
+    MultilabelAUROC,
+    MultilabelRankingLoss,
+)
 from transformers import AutoModelForSequenceClassification
 from utils.dvc_pull import dvc_pull
 
@@ -16,6 +19,10 @@ from .metrics import compute_f1_macro, compute_f1_micro
 
 def run_eval(cfg: DictConfig):
     dvc_pull(remote=cfg.data.remote_name, target=cfg.data.dvc_target)
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    print(f"Using device: {device}")
 
     dm = EmotionDataModule(
         data_dir=cfg.data.data_dir,
@@ -57,7 +64,10 @@ def run_eval(cfg: DictConfig):
 
     model = AutoModelForSequenceClassification.from_pretrained(model_path)
 
+    model.to(device)
     model.eval()
+
+    print(f"Model device: {next(model.parameters()).device}")
 
     test_loader = dm.test_dataloader()
 
@@ -66,9 +76,13 @@ def run_eval(cfg: DictConfig):
 
     with torch.no_grad():
         for batch in test_loader:
+            input_ids = batch["input_ids"].to(device)
+            attention_mask = batch["attention_mask"].to(device)
+            labels = batch["labels"].to(device)
+
             outputs = model(
-                input_ids=batch["input_ids"],
-                attention_mask=batch["attention_mask"],
+                input_ids=input_ids,
+                attention_mask=attention_mask,
             )
 
             logits = outputs.logits
@@ -79,7 +93,7 @@ def run_eval(cfg: DictConfig):
                 probs = torch.sigmoid(logits)
 
             all_probs.append(probs.cpu())
-            all_labels.append(batch["labels"].cpu())
+            all_labels.append(labels.cpu())
 
     y_probs = torch.cat(all_probs)
     y_true = torch.cat(all_labels).int()
@@ -109,8 +123,15 @@ def run_eval(cfg: DictConfig):
         num_labels=num_labels,
         average="macro",
     )
-    auc = MultilabelAUROC(num_labels=num_labels, average="macro")
-    rank_loss = MultilabelRankingLoss(num_labels=num_labels)
+
+    auc = MultilabelAUROC(
+        num_labels=num_labels,
+        average="macro",
+    )
+
+    rank_loss = MultilabelRankingLoss(
+        num_labels=num_labels,
+    )
 
     f1_macro_score = f1_macro(y_probs, y_true)
     f1_micro_score = f1_micro(y_probs, y_true)
@@ -118,14 +139,14 @@ def run_eval(cfg: DictConfig):
     precision_score = precision_macro(y_probs, y_true)
     recall_score = recall_macro(y_probs, y_true)
 
-    y_true_np = y_true.cpu().numpy()
-    y_probs_np = y_probs.cpu().numpy()
+    y_true_np = y_true.numpy()
+    y_probs_np = y_probs.numpy()
 
     custom_f1_macro = compute_f1_macro(y_true_np, y_probs_np)
     custom_f1_micro = compute_f1_micro(y_true_np, y_probs_np)
 
-    auc_score = auc(y_probs, y_true.int())
-    ranking_loss = rank_loss(y_probs, y_true.int())
+    auc_score = auc(y_probs, y_true)
+    ranking_loss = rank_loss(y_probs, y_true)
 
     print(f"Macro F1-score: {f1_macro_score:.4f}")
     print(f"Micro F1-score: {f1_micro_score:.4f}")
@@ -150,6 +171,7 @@ def run_eval(cfg: DictConfig):
 
     results = {
         "model_path": str(model_path),
+        "device": str(device),
         "activation": cfg.model.activation,
         "macro_f1": float(f1_macro_score),
         "micro_f1": float(f1_micro_score),
