@@ -182,6 +182,19 @@ uv run python commands.py export onnx model=rubert_tiny2
 uv run python commands.py export trt model=rubert_tiny2
 ```
 
+### Performance Measurement
+
+```bash
+docker compose run perf-analyzer \
+      -m cointegrated-rubert-tiny2 \
+      -u triton:8000 \
+      -i http \
+      -b 1 \
+      -t 30 \
+      --shape input_ids:1x128 \
+      --shape attention_mask:1x128
+```
+
 ## Inference
 
 ### Single Text Prediction
@@ -421,7 +434,7 @@ The result of the system is a JSON object generated on the client side, which co
 | Precision          | 0.5686                       | 0.5193                             | 0.5365      | 0.5295            | **0.5784**      |
 | Recall             | 0.4024                       | 0.4383                             | **0.5108**  | 0.5060            | 0.4847          |
 | ROC-AUC            | **0.8088**                   | 0.8033                             | 0.7886      | 0.7883            | 0.7869          |
-| Label Ranking Loss | **0.1357**                   | 0.1451                             | 0.1464      | 0.1536            | 0.1450          |
+| Label Ranking Loss | **0.1357**                   | 0.1451                             | 0.1464      | 0.1536            | 0.1450 
 
 **Notes:**
 
@@ -431,3 +444,15 @@ The result of the system is a JSON object generated on the client side, which co
 - `authors` — metrics computed using the official evaluation script from the original repository of the dataset's authors
 
 2. For Label Ranking Loss, lower value is better.
+
+### Model Performance Comparison
+
+| Model                       | Avg Latency (ms) | Throughput (infer/sec) |
+| --------------------------- | ---------------- | ---------------------- |
+| ruBERT-tiny2                | 8.5              | 3528.27                |
+| ruBERT-tiny2                | 8.5              | 3537.77                |
+| ruBERT-base                 | 93.8             | 318.90                 |
+| ruBERT-cased-conversational | 92.7             | 322.8                  |
+| ruRoBERTa-large             | 275.5            | 108.0                  |         |
+
+All measurements were performed with batch size = 1 and concurrency = 30 using NVIDIA Triton `perf_analyzer`.
