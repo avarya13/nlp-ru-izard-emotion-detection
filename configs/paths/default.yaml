@@ -8,7 +8,11 @@ save_json: true
 triton_model_repository: ./triton_server/model_repository
 triton_infer_dir: ./triton_infer_results
 onnx_dir: ./onnx_models
+tensorrt_dir: ./tensorrt_models
 tensorrt_engine: null
+
+triton_repo_onnx: model_repository_onnx
+triton_repo_trt: model_repository_trt
 
 logs_dir: ./logs
 
