@@ -127,13 +127,13 @@ During training, hyperparameters, losses, and evaluation metrics are logged to t
 ## Model evaluation
 
 ```bash
-uv run python -m scripts.evaluate model=ruroberta_large
+uv run python commands.py eval model=ruroberta_large
 ```
 
 To reproduce the evaluation procedure used in the original RuIzardEmotions repository, you can enable Softmax activation::
 
 ```bash
-uv run python -m scripts.evaluate model=rubert_tiny model.activation=softmax
+uv run python commands.py eval model=ruroberta_large model.activation=softmax
 ```
 
 Metrics obtained during batch inference are saved to the `/inference_results` directory.
@@ -184,12 +184,6 @@ uv run python commands.py infer triton model=rubert_tiny2 '+text="Сегодня
 
 ```bash
 uv run python commands.py infer ckpt model=rubert_tiny2 '+text="Сегодня отличный день!"'
-```
-
-#### TensorRT Inference
-
-```bash
-infer/run_tensorrt_infer.sh "Сегодня отличный день!" /path/to/model.engine
 ```
 
 ## Results
