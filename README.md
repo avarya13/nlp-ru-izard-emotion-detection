@@ -84,7 +84,7 @@ multi-label-emotion-detection/
 
 ```bash
 git clone https://github.com/avarya13/multi-label-emotion-detection.git
-cd multi-label-emotion-detection
+cd multi-label-emotion-detection/emotion_detection
 ```
 
 ### Create Environment and Install Dependencies
@@ -123,7 +123,6 @@ The data will be stored in the `data` directory and the models will be in the `e
 If necessary, you can download the dataset directly from Hugging Face:
 
 ```bash
-cd emotion_detection
 uv run python commands.py download
 ```
 
@@ -150,7 +149,6 @@ uv run mlflow server --host 127.0.0.1 --port 8080 --backend-store-uri file:./mlf
 #### Train Model
 
 ```bash
-cd emotion_detection
 uv run python commands.py train model=ruroberta_large
 ```
 
