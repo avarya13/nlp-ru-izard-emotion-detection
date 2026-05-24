@@ -61,7 +61,7 @@ class MultiLabelClassifier(L.LightningModule):
 
         self.train_auc = MultilabelAUROC(num_labels=num_labels, average="macro")
 
-        self.train_rank_loss = MultilabelRankingLoss()
+        self.train_rank_loss = MultilabelRankingLoss(num_labels=num_labels)
 
         self.val_f1_macro = F1Score(
             task="multilabel", num_labels=num_labels, average="macro"
@@ -78,7 +78,7 @@ class MultiLabelClassifier(L.LightningModule):
 
         self.val_auc = MultilabelAUROC(num_labels=num_labels, average="macro")
 
-        self.val_rank_loss = MultilabelRankingLoss()
+        self.val_rank_loss = MultilabelRankingLoss(num_labels=num_labels)
 
     def forward(self, input_ids, attention_mask):
         return self.model(input_ids=input_ids, attention_mask=attention_mask)
