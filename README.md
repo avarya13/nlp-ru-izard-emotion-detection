@@ -197,9 +197,7 @@ docker compose run perf-analyzer \
 
 ## Inference
 
-### Single Text Prediction
-
-#### Prediction using Triton Inference Server
+### Prediction using Triton Inference Server
 
 **Triton requirements:**
 
@@ -223,7 +221,7 @@ Run inference:
 uv run python commands.py infer triton model=rubert_tiny2 '+text="Сегодня отличный день!"'
 ```
 
-#### Prediction without Triton Inference Server
+### Prediction without Triton Inference Server
 
 ```bash
 uv run python commands.py infer ckpt model=rubert_tiny2 '+text="Сегодня отличный день!"'
@@ -434,7 +432,7 @@ The result of the system is a JSON object generated on the client side, which co
 | Precision          | 0.5686                       | 0.5193                             | 0.5365      | 0.5295            | **0.5784**      |
 | Recall             | 0.4024                       | 0.4383                             | **0.5108**  | 0.5060            | 0.4847          |
 | ROC-AUC            | **0.8088**                   | 0.8033                             | 0.7886      | 0.7883            | 0.7869          |
-| Label Ranking Loss | **0.1357**                   | 0.1451                             | 0.1464      | 0.1536            | 0.1450 
+| Label Ranking Loss | **0.1357**                   | 0.1451                             | 0.1464      | 0.1536            | 0.1450          |
 
 **Notes:**
 
@@ -447,12 +445,12 @@ The result of the system is a JSON object generated on the client side, which co
 
 ### Model Performance Comparison
 
-| Model                       | Avg Latency (ms) | Throughput (infer/sec) |
-| --------------------------- | ---------------- | ---------------------- |
-| ruBERT-tiny2                | 8.5              | 3528.27                |
-| ruBERT-tiny2                | 8.5              | 3537.77                |
-| ruBERT-base                 | 93.8             | 318.90                 |
-| ruBERT-cased-conversational | 92.7             | 322.8                  |
-| ruRoBERTa-large             | 275.5            | 108.0                  |         |
+| Model                       | Avg Latency (ms) | Throughput (infer/sec) | GPU Usage (Mb) |
+| --------------------------- | ---------------- | ---------------------- | -------------- |
+| ruBERT-tiny2                | 8.5              | 3528.3                 | 284            |
+| ruBERT-tiny2                | 8.5              | 3537.8                 | 358            |
+| ruBERT-base                 | 93.8             | 318.9                  | 898            |
+| ruBERT-cased-conversational | 92.7             | 322.8                  | 898            |
+| ruRoBERTa-large             | 275.5            | 108.0                  | 1796           |
 
-All measurements were performed with batch size = 1 and concurrency = 30 using NVIDIA Triton `perf_analyzer`.
+Measurements were performed with batch size = 1 and concurrency = 30.
