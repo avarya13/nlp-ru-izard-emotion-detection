@@ -110,7 +110,7 @@ def run_eval(cfg: DictConfig):
         average="macro",
     )
     auc = MultilabelAUROC(num_labels=num_labels, average="macro")
-    rank_loss = MultilabelRankingLoss()
+    rank_loss = MultilabelRankingLoss(num_labels=num_labels)
 
     f1_macro_score = f1_macro(y_probs, y_true)
     f1_micro_score = f1_micro(y_probs, y_true)
